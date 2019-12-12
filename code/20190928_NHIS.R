@@ -1071,15 +1071,19 @@ eligible <- eligible %>%
   mutate(DzSpecificDiab = ifelse(MORTUCOD == 46 | MORTUCODLD == 7 | MORTDIAB == 1, 1,
                                  ifelse(DEAD == 1, 0 , NA))) %>%
   mutate(DzSpecificDiab_NoNA = ifelse(MORTUCOD == 46 | MORTUCODLD == 7 | MORTDIAB == 1, 1, 0)) %>%
-  mutate(DzSpecificCVD = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 | MORTHYPR == 1, 1,
+  mutate(DzSpecificCVDHT = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 | MORTHYPR == 1, 1,
                                 ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, ifelse(DEAD == 1, 0 ,NA)))) %>%
-  mutate(DzSpecificCVD_NoNA = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 | MORTHYPR == 1, 1,
-                                     ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, 0)))
-
-
+  mutate(DzSpecificCVDHT_NoNA = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 | MORTHYPR == 1, 1,
+                                     ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, 0))) %>%
+  mutate(DzSpecificCVD = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 , 1,
+                                  ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, ifelse(DEAD == 1, 0 ,NA)))) %>%
+  mutate(DzSpecificCVD_NoNA = ifelse(MORTUCOD >=56 & MORTUCOD <= 75, 1,
+                                       ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, 0)))
 
 table(eligible$DzSpecificCVD)
 table(eligible$DzSpecificCVD_NoNA)
+table(eligible$DzSpecificCVDHT)
+table(eligible$DzSpecificCVDHT_NoNA)
 table(eligible$DzSpecificDiab)
 table(eligible$DzSpecificDiab_NoNA)
 
@@ -1087,5 +1091,6 @@ table(eligible$DzSpecificDiab, eligible$DiabetesRec2, useNA = "ifany")
 table(eligible$DzSpecificCVD, eligible$AnyCVD, useNA = "ifany")
 
 
-
 eligible%>% group_by(YEAR)%>%summarise(mean(MORTDIAB, na.rm = T))
+
+write.csv(eligible, "C:\\Users\\Owner\\OneDrive\\Documents\\Fall_2019\\Capstone\\nhis2019\\data\\eligible.csv")
