@@ -273,6 +273,19 @@ eligible <- eligible %>%
                               ifelse(MORTUCODLD != 96, 0, NA)))
 
 #above was LEADING cause of death: now do if it was listed as a cause (not necessarily leading)
+table(eligible$MORTUCOD)
+#046 = Diabetes, 056 = hypertensive dz, 057 = hypertensive heart, renal, 059 - 075 = cardio diagnoses
+#100 = renal failure
+
+eligible <- eligible %>%
+  mutate(DzSpecificDiab = ifelse(MORTUCOD == 46 | MORTUCODLD == 7 | MORTDIAB == 1, 1,
+                                 ifelse(DEAD == 1, 0 , NA))) %>%
+  mutate(DzSpecificDiab_NoNA = ifelse(MORTUCOD == 46 | MORTUCODLD == 7 | MORTDIAB == 1, 1, 0)) %>%
+  mutate(DzSpecificCVD = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 | MORTHYPR == 1, 1,
+                                ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, ifelse(DEAD == 1, 0 ,NA)))) %>%
+  mutate(DzSpecificCVD_NoNA = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 | MORTHYPR == 1, 1,
+                                ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, 0)))
+
 
 #Ordinal recoding of income to Poverty Level and Binary if in Poverty
 #table(eligible$POVIMP5, eligible$PovertyRec)
@@ -1046,6 +1059,31 @@ table(eligible$DiabDeath,  eligible$BarrierMedR)
 table(eligible$CvdDeath,  eligible$BarrierMedR)
 table(eligible$MORTDIAB,  eligible$BarrierMedR)
 table(eligible$MORTHYPR,  eligible$BarrierMedR)
+
+#Add up number of conditions
+eligible$AnyHC <-ifelse(eligible$CHD==1 | eligible$HeartAtt==1 | eligible$AngPec==1 |
+                          eligible$HeartDz==1, 1,
+                        ifelse(eligible$CHD==0 & eligible$HeartAtt==0 & eligible$AngPec==0 &
+                                 eligible$HeartDz==0, 0, NA))
+
+eligible$AnyHCHT <- ifelse(eligible$AnyHC==1 | eligible$HyperTen==1,1,
+                           ifelse(eligible$AnyHC==0 & eligible$HyperTen==0, 0 , NA))
+
+eligible$AnyCVD <- ifelse(eligible$AnyHC==1 | eligible$Stroke==1, 1,
+                          ifelse(eligible$AnyHC == 0 & eligible$Stroke==0, 0, NA))
+
+eligible$AnyCVDHT <- ifelse(eligible$AnyCVD==1 | eligible$HyperTen==1, 1,
+                            ifelse(eligible$AnyCVD == 0 & eligible$HyperTen==0, 0, NA))
+
+
+
+table(eligible$DzSpecificCVD)
+table(eligible$DzSpecificCVD_NoNA)
+table(eligible$DzSpecificDiab)
+table(eligible$DzSpecificDiab_NoNA)
+
+table(eligible$DzSpecificDiab, eligible$DiabetesRec2, useNA = "ifany")
+table(eligible$DzSpecificCVD, eligible$AnyCVD, useNA = "ifany")
 
 
 
