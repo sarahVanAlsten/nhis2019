@@ -16,7 +16,7 @@ library(ipumsr)
 library(tidyverse)
 library(tableone)
 library(crunch)
-ddi <- read_ipums_ddi("C:\\Users\\Owner\\OneDrive\\Documents\\Fall_2019\\Capstone\\nhis2019\\data\\nhis_00009.xml")
+ddi <- read_ipums_ddi("C:\\Users\\Owner\\OneDrive\\Documents\\Fall_2019\\Capstone\\nhis2019\\data\\nhis_00010.xml")
 data <- read_ipums_micro(ddi)
 names(data)
 
@@ -271,6 +271,8 @@ eligible <- eligible %>%
                                ifelse(MORTUCODLD != 96, 0, NA))) %>%
   mutate(OtherDeath = if_else(MORTUCODLD ==10, 1,
                               ifelse(MORTUCODLD != 96, 0, NA)))
+
+#above was LEADING cause of death: now do if it was listed as a cause (not necessarily leading)
 
 #Ordinal recoding of income to Poverty Level and Binary if in Poverty
 #table(eligible$POVIMP5, eligible$PovertyRec)
@@ -1040,6 +1042,11 @@ rm(subData)
 
 
 
-table(eligible$MORTDIAB,  eligible$anyMedBx)
+table(eligible$DiabDeath,  eligible$BarrierMedR)
+table(eligible$CvdDeath,  eligible$BarrierMedR)
+table(eligible$MORTDIAB,  eligible$BarrierMedR)
+table(eligible$MORTHYPR,  eligible$BarrierMedR)
+
+
 
 eligible%>% group_by(YEAR)%>%summarise(mean(MORTDIAB, na.rm = T))
