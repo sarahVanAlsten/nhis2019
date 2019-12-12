@@ -272,20 +272,6 @@ eligible <- eligible %>%
   mutate(OtherDeath = if_else(MORTUCODLD ==10, 1,
                               ifelse(MORTUCODLD != 96, 0, NA)))
 
-#above was LEADING cause of death: now do if it was listed as a cause (not necessarily leading)
-table(eligible$MORTUCOD)
-#046 = Diabetes, 056 = hypertensive dz, 057 = hypertensive heart, renal, 059 - 075 = cardio diagnoses
-#100 = renal failure
-
-eligible <- eligible %>%
-  mutate(DzSpecificDiab = ifelse(MORTUCOD == 46 | MORTUCODLD == 7 | MORTDIAB == 1, 1,
-                                 ifelse(DEAD == 1, 0 , NA))) %>%
-  mutate(DzSpecificDiab_NoNA = ifelse(MORTUCOD == 46 | MORTUCODLD == 7 | MORTDIAB == 1, 1, 0)) %>%
-  mutate(DzSpecificCVD = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 | MORTHYPR == 1, 1,
-                                ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, ifelse(DEAD == 1, 0 ,NA)))) %>%
-  mutate(DzSpecificCVD_NoNA = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 | MORTHYPR == 1, 1,
-                                ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, 0)))
-
 
 #Ordinal recoding of income to Poverty Level and Binary if in Poverty
 #table(eligible$POVIMP5, eligible$PovertyRec)
@@ -1074,6 +1060,21 @@ eligible$AnyCVD <- ifelse(eligible$AnyHC==1 | eligible$Stroke==1, 1,
 
 eligible$AnyCVDHT <- ifelse(eligible$AnyCVD==1 | eligible$HyperTen==1, 1,
                             ifelse(eligible$AnyCVD == 0 & eligible$HyperTen==0, 0, NA))
+
+
+#above was LEADING cause of death: now do if it was listed as a cause (not necessarily leading)
+table(eligible$MORTUCOD)
+#046 = Diabetes, 056 = hypertensive dz, 057 = hypertensive heart, renal, 059 - 075 = cardio diagnoses
+#100 = renal failure
+
+eligible <- eligible %>%
+  mutate(DzSpecificDiab = ifelse(MORTUCOD == 46 | MORTUCODLD == 7 | MORTDIAB == 1, 1,
+                                 ifelse(DEAD == 1, 0 , NA))) %>%
+  mutate(DzSpecificDiab_NoNA = ifelse(MORTUCOD == 46 | MORTUCODLD == 7 | MORTDIAB == 1, 1, 0)) %>%
+  mutate(DzSpecificCVD = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 | MORTHYPR == 1, 1,
+                                ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, ifelse(DEAD == 1, 0 ,NA)))) %>%
+  mutate(DzSpecificCVD_NoNA = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 | MORTHYPR == 1, 1,
+                                     ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, 0)))
 
 
 
