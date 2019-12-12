@@ -15,7 +15,8 @@
 library(ipumsr)
 library(tidyverse)
 library(tableone)
-ddi <- read_ipums_ddi("C:\\Users\\Owner\\OneDrive\\Documents\\Fall_2019\\Capstone\\nhis\\data\\nhis_00009.xml")
+library(crunch)
+ddi <- read_ipums_ddi("C:\\Users\\Owner\\OneDrive\\Documents\\Fall_2019\\Capstone\\nhis2019\\data\\nhis_00009.xml")
 data <- read_ipums_micro(ddi)
 names(data)
 
@@ -1037,7 +1038,8 @@ write.csv(inconFU, "C:\\Users\\Owner\\OneDrive\\Documents\\Fall_2019\\Capstone\\
 nhis <- eligible[eligible$fuTime > 0 | is.na(eligible$fuTime),]
 rm(subData)
 
-#write out the subsample to a CSV for later use
-write.csv(nhis, "C:\\Users\\Owner\\OneDrive\\Documents\\Fall_2019\\Capstone\\nhis\\data\\keepNHIS.csv")
 
 
+table(eligible$MORTDIAB,  eligible$anyMedBx)
+
+eligible%>% group_by(YEAR)%>%summarise(mean(MORTDIAB, na.rm = T))
