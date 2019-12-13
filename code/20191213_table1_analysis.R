@@ -23,17 +23,25 @@
 
 #make four survey designs: one for sampweight, one for perweight, one for
 #mortality weight for 2000-2014, and one for mortality weight 2000-2010
+library(survey)
+library(tableone)
+eligible <- read.csv("data\\eligible.csv")
+
+eligible<- eligible %>%
+  mutate(sampWeight14 = SAMPWEIGHT / 15,
+         sampWeight10 = SAMPWEIGHT / 11)
+eligible$samp10 <- 
+  samp.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ (SAMPWEIGHT/14),
+                        nest = TRUE, data = eligible)
 
 
-nhanes$SDMVPSU <- as.factor(nhanes$SDMVPSU)
-nhanesSvy <- svydesign(ids = ~ SDMVPSU, strata = ~ SDMVSTRA, weights = ~ WTMEC2YR,
-                       nest = TRUE, data = nhanes)
 svyCreateTableOne2(vars = c("HI_CHOL","race","agecat","RIAGENDR"),
                    strata = "RIAGENDR", data = nhanesSvy)
 
 tableone::svyCreateTableOne(vars, strata = STRATA, data = eligible, 
                             factorVars, includeNA = FALSE,
-                  test = TRUE, testApprox = svyTestChisq, argsApprox = NULL,
-                  testNormal = svyTestNormal, argsNormal = list(method = "Wald"),
-                  testNonNormal = svyTestNonNormal, argsNonNormal = NULL, smd = TRUE)
+                            test = TRUE, testApprox = svyTestChisq, argsApprox = NULL,
+                            testNormal = svyTestNormal, argsNormal = list(method = "Wald"),
+                            testNonNormal = svyTestNonNormal, argsNonNormal = NULL, smd = TRUE)
+
 
