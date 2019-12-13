@@ -292,28 +292,28 @@ ggplot(eligible, aes(x = BMI))+ geom_density()
 
 #recode delayed medical care due to cost, and other reasons
 eligible <- eligible %>%
-  mutate(DELAYCOSTR = ifelse(DELAYCOST > 2, NA, 
+  mutate(DELAYCOSTR = ifelse(DELAYCOST > 2 | DELAYCOST == 0, NA, 
                              ifelse(DELAYCOST == 1, 0, 1))) %>% #care cost too much
-  mutate(DELAYAPPTR = ifelse(DELAYAPPT > 2, NA, 
+  mutate(DELAYAPPTR = ifelse(DELAYAPPT > 2 | DELAYAPPT == 0, NA, 
                              ifelse(DELAYAPPT == 1, 0, 1))) %>% #couldn't get appt soon enough
-  mutate(DELAYHRSR = ifelse(DELAYHRS > 2, NA, 
-                             ifelse(DELAYHRS == 1, 0, 1))) %>% #office hours didn't work
-  mutate(DELAYPHONER = ifelse(DELAYPHONE > 2, NA, 
-                             ifelse(DELAYPHONE == 1, 0, 1))) %>% #couldn't reach by phone
-  mutate(DELAYTRANSR = ifelse(DELAYTRANS > 2, NA, 
-                             ifelse(DELAYTRANS == 1, 0, 1))) %>% #couldn't get transportation
-  mutate(DELAYWAITR = ifelse(DELAYWAIT > 2, NA, 
+  mutate(DELAYHRSR = ifelse(DELAYHRS > 2 | DELAYHRS == 0, NA, 
+                            ifelse(DELAYHRS == 1, 0, 1))) %>% #office hours didn't work
+  mutate(DELAYPHONER = ifelse(DELAYPHONE > 2 | DELAYPHONE == 0, NA, 
+                              ifelse(DELAYPHONE == 1, 0, 1))) %>% #couldn't reach by phone
+  mutate(DELAYTRANSR = ifelse(DELAYTRANS > 2 | DELAYTRANS == 0, NA, 
+                              ifelse(DELAYTRANS == 1, 0, 1))) %>% #couldn't get transportation
+  mutate(DELAYWAITR = ifelse(DELAYWAIT > 2 | DELAYWAIT == 0, NA, 
                              ifelse(DELAYWAIT == 1, 0, 1))) %>% #wait time too long
-  mutate(BarrierCareR = ifelse(YBARCARE > 2, NA, 
-                             ifelse(YBARCARE == 1, 0, 1))) %>% #needed but couldn't afford med care
-  mutate(BarrierMedR = ifelse(YBARMEDS > 2, NA, 
-                             ifelse(YBARMEDS == 1, 0, 1)))%>%  #needed but couldn't afford medication
-  mutate(BarrierFUR = ifelse(YBARFOLLOW > 2, NA, 
-                              ifelse(YBARFOLLOW == 1, 0, 1)))%>%  #needed but couldn't afford followup
-  mutate(BarrierSpecR = ifelse(YBARSPECL > 2, NA, 
-                              ifelse(YBARSPECL == 1, 0, 1)))%>%  #needed but couldn't afford specialist
-  mutate(BarrierMHR = ifelse(YBARMENTAL > 2, NA, 
-                              ifelse(YBARMENTAL == 1, 0, 1))) #needed but couldn't afford mental health care
+  mutate(BarrierCareR = ifelse(YBARCARE > 2 | YBARCARE == 0, NA, 
+                               ifelse(YBARCARE == 1, 0, 1))) %>% #needed but couldn't afford med care
+  mutate(BarrierMedR = ifelse(YBARMEDS > 2 | YBARMEDS == 0, NA, 
+                              ifelse(YBARMEDS == 1, 0, 1)))%>%  #needed but couldn't afford medication
+  mutate(BarrierFUR = ifelse(YBARFOLLOW > 2 | YBARFOLLOW == 0, NA, 
+                             ifelse(YBARFOLLOW == 1, 0, 1)))%>%  #needed but couldn't afford followup
+  mutate(BarrierSpecR = ifelse(YBARSPECL > 2 | YBARSPECL == 0, NA, 
+                               ifelse(YBARSPECL == 1, 0, 1)))%>%  #needed but couldn't afford specialist
+  mutate(BarrierMHR = ifelse(YBARMENTAL > 2 | YBARMENTAL == 0, NA, 
+                             ifelse(YBARMENTAL == 1, 0, 1))) #needed but couldn't afford mental health care
 
 #barriers to care by poverty
 CreateCatTable(vars = c("DELAYCOSTR", "DELAYHRSR", "DELAYPHONER", "DELARYTRANSR","DELAYAPPTR",
@@ -433,24 +433,30 @@ CreateCatTable(vars = c("DEAD"),
 #################################################
 #Behaviors to Save Money on Meds
 eligible <- eligible %>%
-  mutate(skipMed = ifelse(YSKIPMEDYR > 2, NA,
+  mutate(skipMed = ifelse(YSKIPMEDYR > 2 | YSKIPMEDYR == 0, NA,
                           ifelse(YSKIPMEDYR == 1, 0,
                                  ifelse(YSKIPMEDYR ==2, 1,NA))))%>%
-  mutate(delayMed = ifelse(YDELAYMEDYR > 2, NA,
-                          ifelse(YDELAYMEDYR == 1, 0,
-                                 ifelse(YDELAYMEDYR ==2, 1,NA))))%>%
-  mutate(CheapMed = ifelse(YCHEAPMEDYR > 2, NA,
-                          ifelse(YCHEAPMEDYR == 1, 0,
-                                 ifelse(YCHEAPMEDYR ==2, 1,NA))))%>%
-  mutate(foreignMed = ifelse(YFORNMEDYR > 2, NA,
-                          ifelse(YFORNMEDYR == 1, 0,
-                                 ifelse(YFORNMEDYR ==2, 1,NA))))%>%
-  mutate(alternateMed = ifelse(YALTMEDYR > 2, NA,
-                             ifelse(YALTMEDYR == 1, 0,
-                                    ifelse(YALTMEDYR ==2, 1,NA))))%>%
-  mutate(lessMed = ifelse(YSKIMPMEDYR > 2, NA,
+  mutate(delayMed = ifelse(YDELAYMEDYR > 2| YDELAYMEDYR == 0, NA,
+                           ifelse(YDELAYMEDYR == 1, 0,
+                                  ifelse(YDELAYMEDYR ==2, 1,NA))))%>%
+  mutate(CheapMed = ifelse(YCHEAPMEDYR > 2 | YCHEAPMEDYR == 0, NA,
+                           ifelse(YCHEAPMEDYR == 1, 0,
+                                  ifelse(YCHEAPMEDYR ==2, 1,NA))))%>%
+  mutate(foreignMed = ifelse(YFORNMEDYR > 2 | YFORNMEDYR == 0, NA,
+                             ifelse(YFORNMEDYR == 1, 0,
+                                    ifelse(YFORNMEDYR ==2, 1,NA))))%>%
+  mutate(alternateMed = ifelse(YALTMEDYR > 2 | YALTMEDYR == 0, NA,
+                               ifelse(YALTMEDYR == 1, 0,
+                                      ifelse(YALTMEDYR ==2, 1,NA))))%>%
+  mutate(lessMed = ifelse(YSKIMPMEDYR > 2 | YSKIMPMEDYR == 0, NA,
                           ifelse(YSKIMPMEDYR == 1, 0,
                                  ifelse(YSKIMPMEDYR ==2, 1,NA))))
+
+#create a CRN measure
+#yes if ybarmedr is as yes or any of the the 3 specific measures are a yes
+eligible <- eligible %>%
+  mutate(CRN = ifelse(BarrierMedR == 1 | skipMed == 1 | lessMed == 1 | delayMed == 1, 1, 
+                      ifelse(is.na(BarrierMedR), NA, 0)))
 
 CreateCatTable(vars = c("skipMed", "delayMed", "CheapMed", "foreignMed", "alternateMed"),
                strata = "PovertyBinaryY",
@@ -524,7 +530,6 @@ eligible %>%
             alternate = sum(alternateMed==1, na.rm = T))
 
 
-
 table(eligible$skipMed, eligible$delayMed) #OR = 130
 #(6861*99600)/(3882*1354)
 table(eligible$skipMed, eligible$CheapMed) #OR = 1.34
@@ -537,11 +542,6 @@ table(eligible$CheapMed, eligible$foreignMed)#OR = 4.51
 #(1136*87826)/(21690*1020)
 table(eligible$CheapMed, eligible$delayMed)# OR = 15.04
 #(7782*85886)/(15044*2954)
-
-names(eligible)
-#how many of the CRN related items were reported
-eligible$numMedBx <- rowSums(eligible[,420:425])
-eligible$anyMedBx <- ifelse(eligible$numMedBx > 0, 1, 0)
 
 #create variable for any cost related barrier to care
 #DELAYCOSTR BarrierCareR BarrierMedR BarrierFUR BarrierSpecR (BarrierMHR)
@@ -563,16 +563,6 @@ eligible %>%
             NoAffordSpec = sum(BarrierSpecR==1, na.rm = T),
             NoAffordMH = sum(BarrierMHR == 1, na.rm = T))
 
-#How many cost related barriers to care they had (not barriers due to other reasons)
-eligible$numCostBarrier <- rowSums(eligible[,c(409,415:419)])
-eligible$anyCostBarrier <- ifelse(eligible$numCostBarrier > 0, 1, 0)
-
-#how many cost related barrieres minus Mental Health
-eligible$numCostBarrierNoMH <- rowSums(eligible[,c(409,415:418)])
-eligible$anyCostBarrierNoMH <- ifelse(eligible$numCostBarrierNoMH > 0, 1, 0)
-
-table(eligible$numCostBarrier)
-table(eligible$numCostBarrierNoMH)
 
 #table of med and cost barriers by cancer ever
 CreateCatTable(vars = c("anyCostBarrier", "anyMedBx", "numCostBarrier", "numMedBx", "anyCostBarrierNoMH", "numCostBarrierNoMH"),
