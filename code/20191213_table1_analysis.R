@@ -31,6 +31,7 @@ library(tidyverse)
 #read in the data
 eligible <- read.csv("data\\eligible.csv")
 
+table(eligible$CRN, eligible$ASTATFLG, useNA = "ifany")
 
 #the reason it's 15 and 11 is because 2000-2014 is actually 15 total cycles,
 #and 2000-2010 is 11 cycles!
@@ -41,48 +42,58 @@ eligible<- eligible %>%
 
 eligible<- eligible %>%
   mutate(perWeight14 = PERWEIGHT / 15,
-         mortWeight14 = MORTWTSA / 15,
-         mortWeight10 = MORTWTSA / 11,
-         mortWeight5 = MORTWTSA / 5)
+         mortWeight14 = MORTWT / 15,
+         mortWeight10 = MORTWT / 11,
+         mortWeight5 = MORTWT / 5)
 
-########################################################
-#Now, per this link here: file:///C:/Users/Owner/OneDrive/Documents/DrHarris/srvydesc.pdf (pg 99)
-#certain subgroups of years have to be treated as independent, otherwise PSUs will overlap
-#I have 2 distinct groups (2000 - 2005) and 2006 - 2014. NCHS suggests adding
-#1000 to all strata in first wave and 2000 to all in the second wave. Thus, I will do so, creating
-#a new strata var
+#reconstruct the allcause and dz specific mortality variables
+eligible <- eligible %>%
+  mutate(allCauseMort = ifelse(DEAD == 1, 1, 
+                               ifelse(DEAD == 0, 0, NA)))
+
+#died of diabetes is dm flagged as a cause(mortdiab) or leading cod listed as diabetes
+#or listed cod (not necessarily leading) listed as diabetes
+eligible <- eligible %>%
+  mutate(diabMort = ifelse(DEAD == 0, 0,
+                           ifelse(is.na(MORTUCODLD) & is.na(MORTUCOD) & is.na(MORTDIAB), NA, 
+                           ifelse((MORTUCODLD == 7 | MORTUCOD == 46 | MORTDIAB == 2), 1, 0))))
 
 eligible <- eligible %>%
-  mutate(strataNew = ifelse(YEAR <= 2005, STRATA + 1000,
-                            ifelse(YEAR > 2005, 
-                                   STRATA + 2000, NA)))
+  mutate(cvdMort = ifelse(DEAD == 0, 0,
+                          ifelse(is.na(MORTUCODLD) & is.na(MORTUCOD), NA, 
+                           ifelse((MORTUCODLD == 7 | MORTUCOD == 46 | MORTDIAB == 2), 1, 0))))
 
+table(eligible$DEAD, eligible$MORTUCOD, useNA = "ifany")
 
-
+########################################################
+#IPUMS constructed a strata var to use to combine years
 
 #sample adult weights. Need 1 for vars assesed in all years, another
 #for those assessed in 2010-2014 (the more descriptive CRN items)
-samp14.Svy <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ sampWeight14,
+samp14.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ sampWeight14,
                         nest = TRUE, data = eligible)
 
-samp5.Svy <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ sampWeight5,
+samp5.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ sampWeight5,
                         nest = TRUE, data = eligible)
 
 #person weights, for demographic variables
-per14.Svy <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ perWeight14,
+per14.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ perWeight14,
                        nest = TRUE, data = eligible)
 
 #mortality weights, for COXPH
-mort14.Svy <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ mortWeight14,
+mort14.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight14,
                         nest = TRUE, data = eligible)
 
-mort10.Svy <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ mortWeight10,
+mort10.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight10,
                         nest = TRUE, data = eligible)
 
 finprob <- (is.finite(mort14.Svy$prob))
+finprob10 <- (is.finite(mort10.Svy$prob))
+prop.table(table(finprob))
+prop.table(table(finprob10))
+
 
 eligible$finprob <- finprob
-table(eligible$finprob, eligible$ASTATFLG)
 
 #also seems part of problem is that non-sample adults have a non-finite selecton probability
 #so will set only to those who have finite prob
@@ -95,6 +106,9 @@ mort14.Svy.fin <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ mortW
 
 mort10.Svy.fin <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ mortWeight10,
                         nest = TRUE, data = eligibleFIN)
+
+table(is.finite(mort14.Svy.fin$prob))
+table(is.finite(mort10.Svy.fin$prob))
 
 ####################################################################
 #per survey package guidelines, use subset() to get appropriate subpopulation estimates
@@ -118,13 +132,17 @@ cvd.mort10 <- subset(mort10.Svy, AnyCVD == 1)
 cvdht.mort10 <- subset(mort10.Svy, AnyCVDHT == 1)
 
 #finite probs
-diab.mort14.fin <- subset(mort14.Svy.fin, DiabetesRec == 1)
-cvd.mort14.fin <- subset(mort14.Svy.fin, AnyCVD == 1)
-cvdht.mort14.fin <- subset(mort14.Svy.fin, AnyCVDHT == 1)
+#diab.mort14.fin <- subset(mort14.Svy.fin, DiabetesRec == 1)
+#cvd.mort14.fin <- subset(mort14.Svy.fin, AnyCVD == 1)
+#cvdht.mort14.fin <- subset(mort14.Svy.fin, AnyCVDHT == 1)
 
-diab.mort10.fin <- subset(mort10.Svy.fin, DiabetesRec == 1)
-cvd.mort10.fin <- subset(mort10.Svy.fin, AnyCVD == 1)
-cvdht.mort10.fin <- subset(mort10.Svy.fin, AnyCVDHT == 1)
+diab.mort14.fin <- subset(mort14.Svy, DiabetesRec == 1 & finprob == TRUE)
+cvd.mort14.fin <- subset(mort14.Svy, AnyCVD == 1 & finprob == TRUE)
+cvdht.mort14.fin <- subset(mort14.Svy, AnyCVDHT == 1 & finprob == TRUE)
+
+diab.mort10.fin <- subset(mort10.Svy.fin, DiabetesRec == 1  & finprob == TRUE)
+cvd.mort10.fin <- subset(mort10.Svy.fin, AnyCVD == 1 & finprob == TRUE)
+cvdht.mort10.fin <- subset(mort10.Svy.fin, AnyCVDHT == 1 & finprob == TRUE)
 ###############################################################################
 #clean up environment to help things run faster
 rm(eligible)
@@ -221,6 +239,8 @@ table(diab.mort14$variables$DEAD, diab.mort14$variables$CRN, useNA = "ifany")
 ########################################################################################
 #svycoxph and survival to run the regressions
 #crude/unadjusted
+
+
 table(is.na(diab.mort14.fin$variables$fuTime))
 table(is.na(diab.mort14.fin$variables$CRN))
 table(is.na(diab.mort14.fin$variables$DzSpecificDiab_NoNA))

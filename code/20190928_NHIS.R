@@ -1058,12 +1058,12 @@ table(eligible$MORTUCOD)
 #100 = renal failure
 
 eligible <- eligible %>%
-  mutate(DzSpecificDiab = ifelse(MORTUCOD == 46 | MORTUCODLD == 7 | MORTDIAB == 1, 1,
+  mutate(DzSpecificDiab = ifelse(MORTUCOD == 46 | MORTUCODLD == 7 | MORTDIAB == 2, 1,
                                  ifelse(DEAD == 1, 0 , NA))) %>%
-  mutate(DzSpecificDiab_NoNA = ifelse(MORTUCOD == 46 | MORTUCODLD == 7 | MORTDIAB == 1, 1, 0)) %>%
-  mutate(DzSpecificCVDHT = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 | MORTHYPR == 1, 1,
+  mutate(DzSpecificDiab_NoNA = ifelse(MORTUCOD == 46 | MORTUCODLD == 7 | MORTDIAB == 2, 1, 0)) %>%
+  mutate(DzSpecificCVDHT = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 | MORTHYPR == 2, 1,
                                 ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, ifelse(DEAD == 1, 0 ,NA)))) %>%
-  mutate(DzSpecificCVDHT_NoNA = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 | MORTHYPR == 1, 1,
+  mutate(DzSpecificCVDHT_NoNA = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 | MORTHYPR == 2, 1,
                                      ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, 0))) %>%
   mutate(DzSpecificCVD = ifelse(MORTUCOD >=56 & MORTUCOD <= 75 , 1,
                                   ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, ifelse(DEAD == 1, 0 ,NA)))) %>%
