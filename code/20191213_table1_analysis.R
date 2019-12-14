@@ -61,10 +61,18 @@ eligible <- eligible %>%
 eligible <- eligible %>%
   mutate(cvdMort = ifelse(DEAD == 0, 0,
                           ifelse(is.na(MORTUCODLD) & is.na(MORTUCOD), NA, 
-                           ifelse((MORTUCODLD == 7 | MORTUCOD == 46 | MORTDIAB == 2), 1, 0))))
+                           ifelse((MORTUCODLD == 1 | MORTUCODLD == 5 | (MORTUCOD >= 56  & MORTUCOD <= 75)), 1, 0))))
+
+eligible <- eligible %>%
+  mutate(cvdHtMort = ifelse(DEAD == 0, 0,
+                          ifelse(is.na(MORTUCODLD) & is.na(MORTUCOD) & is.na(MORTHYPR), NA, 
+                                 ifelse(MORTHYPR == 2 | MORTUCODLD == 1 | MORTUCODLD == 5 | 
+                                          (MORTUCOD >= 56  & MORTUCOD <= 75), 1, 0))))
+
 
 table(eligible$DEAD, eligible$MORTUCOD, useNA = "ifany")
-
+table(eligible$cvdMort, useNA = "ifany")
+table(eligible$cvdHtMort, useNA = "ifany")
 ########################################################
 #IPUMS constructed a strata var to use to combine years
 
@@ -94,21 +102,6 @@ prop.table(table(finprob10))
 
 
 eligible$finprob <- finprob
-
-#also seems part of problem is that non-sample adults have a non-finite selecton probability
-#so will set only to those who have finite prob
-eligibleFIN <- eligible %>%
-  filter(finprob == 1)
-
-#mortality weights, for COXPH
-mort14.Svy.fin <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ mortWeight14,
-                        nest = TRUE, data = eligibleFIN)
-
-mort10.Svy.fin <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ mortWeight10,
-                        nest = TRUE, data = eligibleFIN)
-
-table(is.finite(mort14.Svy.fin$prob))
-table(is.finite(mort10.Svy.fin$prob))
 
 ####################################################################
 #per survey package guidelines, use subset() to get appropriate subpopulation estimates
