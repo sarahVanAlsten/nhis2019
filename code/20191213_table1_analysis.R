@@ -130,6 +130,40 @@ svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
                   test = TRUE, smd = TRUE)
 
 
+#BMI and Age (my only 2 continuous vars) are most likely not normally distributed
+#check their distributions, and change to non-normal tests as needed
+
+ggplot(data = diab.per14$variables, aes(x = BMI, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
+ggplot(data = cvd.per14$variables, aes(x = BMI, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
+ggplot(data = cvdht.per14$variables, aes(x = BMI, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
+
+#none of them are horrible, but they do all seem right skewed
+
+ggplot(data = diab.per14$variables, aes(x = AGE, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
+ggplot(data = cvd.per14$variables, aes(x = AGE, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
+ggplot(data = cvdht.per14$variables, aes(x = AGE, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
+#age is definitely not normal: very left skewed
 
 
+bmi.diab <- svyCreateTableOne(vars = c("AGE","BMI"), strata = 'CRN', data = diab.per14,
+                  argsNonNormal = c("AGE", "BMI"), includeNA = FALSE,
+                  test = TRUE, smd = TRUE)
+print(bmi.diab, minMax = T, nonnormal = c("AGE", "BMI"))
 
+bmi.cvd <- svyCreateTableOne(vars = c("AGE","BMI"), strata = 'CRN', data = cvd.per14,
+                              argsNonNormal = c("AGE", "BMI"), includeNA = FALSE,
+                              test = TRUE, smd = TRUE)
+print(bmi.cvd, minMax = T, nonnormal = c("AGE", "BMI"))
+
+bmi.cvdht <- svyCreateTableOne(vars = c("AGE","BMI"), strata = 'CRN', data = cvdht.per14,
+                             argsNonNormal = c("AGE", "BMI"), includeNA = FALSE,
+                             test = TRUE, smd = TRUE)
+print(bmi.cvdht, minMax = T, nonnormal = c("AGE", "BMI"))
+
+kruskal.test(x = cvdht.per14$variables$BMI, g = cvdht.per14$variables$CRN)
+kruskal.test(x = cvd.per14$variables$BMI, g = cvd.per14$variables$CRN)
+kruskal.test(x = diab.per14$variables$BMI, g = diab.per14$variables$CRN)
+
+kruskal.test(x = cvdht.per14$variables$AGE, g = cvdht.per14$variables$CRN)
+kruskal.test(x = cvd.per14$variables$AGE, g = cvd.per14$variables$CRN)
+kruskal.test(x = diab.per14$variables$AGE, g = diab.per14$variables$CRN)
