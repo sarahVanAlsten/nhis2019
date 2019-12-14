@@ -24,6 +24,7 @@
 #make five survey designs: two for sampweight, one for perweight, one for
 #mortality weight for 2000-2014, and one for mortality weight 2000-2010
 library(survey)
+library(survival)
 library(tableone)
 library(tidyverse)
 
@@ -44,24 +45,56 @@ eligible<- eligible %>%
          mortWeight10 = MORTWTSA / 11,
          mortWeight5 = MORTWTSA / 5)
 
+########################################################
+#Now, per this link here: file:///C:/Users/Owner/OneDrive/Documents/DrHarris/srvydesc.pdf (pg 99)
+#certain subgroups of years have to be treated as independent, otherwise PSUs will overlap
+#I have 2 distinct groups (2000 - 2005) and 2006 - 2014. NCHS suggests adding
+#1000 to all strata in first wave and 2000 to all in the second wave. Thus, I will do so, creating
+#a new strata var
+
+eligible <- eligible %>%
+  mutate(strataNew = ifelse(YEAR <= 2005, STRATA + 1000,
+                            ifelse(YEAR > 2005, 
+                                   STRATA + 2000, NA)))
+
+
+
+
 #sample adult weights. Need 1 for vars assesed in all years, another
 #for those assessed in 2010-2014 (the more descriptive CRN items)
-samp14.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ sampWeight14,
+samp14.Svy <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ sampWeight14,
                         nest = TRUE, data = eligible)
 
-samp5.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ sampWeight5,
+samp5.Svy <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ sampWeight5,
                         nest = TRUE, data = eligible)
 
 #person weights, for demographic variables
-per14.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ perWeight14,
+per14.Svy <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ perWeight14,
                        nest = TRUE, data = eligible)
 
 #mortality weights, for COXPH
-mort14.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight14,
+mort14.Svy <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ mortWeight14,
                         nest = TRUE, data = eligible)
 
-mort10.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight10,
+mort10.Svy <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ mortWeight10,
                         nest = TRUE, data = eligible)
+
+finprob <- (is.finite(mort14.Svy$prob))
+
+eligible$finprob <- finprob
+table(eligible$finprob, eligible$ASTATFLG)
+
+#also seems part of problem is that non-sample adults have a non-finite selecton probability
+#so will set only to those who have finite prob
+eligibleFIN <- eligible %>%
+  filter(finprob == 1)
+
+#mortality weights, for COXPH
+mort14.Svy.fin <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ mortWeight14,
+                        nest = TRUE, data = eligibleFIN)
+
+mort10.Svy.fin <- svydesign(ids = ~ PSU, strata = ~ strataNew, weights = ~ mortWeight10,
+                        nest = TRUE, data = eligibleFIN)
 
 ####################################################################
 #per survey package guidelines, use subset() to get appropriate subpopulation estimates
@@ -83,6 +116,15 @@ cvdht.mort14 <- subset(mort14.Svy, AnyCVDHT == 1)
 diab.mort10 <- subset(mort10.Svy, DiabetesRec == 1)
 cvd.mort10 <- subset(mort10.Svy, AnyCVD == 1)
 cvdht.mort10 <- subset(mort10.Svy, AnyCVDHT == 1)
+
+#finite probs
+diab.mort14.fin <- subset(mort14.Svy.fin, DiabetesRec == 1)
+cvd.mort14.fin <- subset(mort14.Svy.fin, AnyCVD == 1)
+cvdht.mort14.fin <- subset(mort14.Svy.fin, AnyCVDHT == 1)
+
+diab.mort10.fin <- subset(mort10.Svy.fin, DiabetesRec == 1)
+cvd.mort10.fin <- subset(mort10.Svy.fin, AnyCVD == 1)
+cvdht.mort10.fin <- subset(mort10.Svy.fin, AnyCVDHT == 1)
 ###############################################################################
 #clean up environment to help things run faster
 rm(eligible)
@@ -167,3 +209,25 @@ kruskal.test(x = diab.per14$variables$BMI, g = diab.per14$variables$CRN)
 kruskal.test(x = cvdht.per14$variables$AGE, g = cvdht.per14$variables$CRN)
 kruskal.test(x = cvd.per14$variables$AGE, g = cvd.per14$variables$CRN)
 kruskal.test(x = diab.per14$variables$AGE, g = diab.per14$variables$CRN)
+
+
+table(diab.mort14$variables$DzSpecificDiab_NoNA, diab.mort14$variables$CRN, useNA = "ifany")
+table(cvd.mort14$variables$DzSpecificCVD_NoNA, cvd.mort14$variables$CRN, useNA = "ifany")
+table(cvd.mort14$variables$DzSpecificCVD, cvd.mort14$variables$CRN, useNA = "ifany")
+table(cvdht.mort14$variables$DzSpecificCVDHT, cvdht.mort14$variables$CRN, useNA = "ifany")
+table(cvd.mort14$variables$DzSpecificCVDHT_NoNA, cvd.mort14$variables$CRN, useNA = "ifany")
+
+table(diab.mort14$variables$DEAD, diab.mort14$variables$CRN, useNA = "ifany")
+########################################################################################
+#svycoxph and survival to run the regressions
+#crude/unadjusted
+table(is.na(diab.mort14.fin$variables$fuTime))
+table(is.na(diab.mort14.fin$variables$CRN))
+table(is.na(diab.mort14.fin$variables$DzSpecificDiab_NoNA))
+
+mod1.diab <- svycoxph(formula = Surv(fuTime, DzSpecificDiab_NoNA)~factor(CRN),
+                      design = diab.mort14.fin)
+
+summary(mod1.diab)
+#to display hazard ratio (exp(b))
+exp(mod1.diab$coefficients)

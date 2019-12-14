@@ -1086,4 +1086,4 @@ eligible%>% group_by(YEAR)%>%summarise(mean(MORTDIAB, na.rm = T))
 write.csv(eligible, "C:\\Users\\Owner\\OneDrive\\Documents\\Fall_2019\\Capstone\\nhis2019\\data\\eligible.csv")
 eligible <- read.csv("data\\eligible.csv")
 
-
+table(eligible$DzSpecificDiab, eligible$DzSpecificDiab_NoNA, useNA = "ifany")
