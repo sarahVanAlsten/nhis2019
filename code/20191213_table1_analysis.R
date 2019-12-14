@@ -124,11 +124,6 @@ diab.mort10 <- subset(mort10.Svy, DiabetesRec == 1)
 cvd.mort10 <- subset(mort10.Svy, AnyCVD == 1)
 cvdht.mort10 <- subset(mort10.Svy, AnyCVDHT == 1)
 
-#finite probs
-#diab.mort14.fin <- subset(mort14.Svy.fin, DiabetesRec == 1)
-#cvd.mort14.fin <- subset(mort14.Svy.fin, AnyCVD == 1)
-#cvdht.mort14.fin <- subset(mort14.Svy.fin, AnyCVDHT == 1)
-
 diab.mort14.fin <- subset(mort14.Svy, DiabetesRec == 1 & finprob == TRUE)
 cvd.mort14.fin <- subset(mort14.Svy, AnyCVD == 1 & finprob == TRUE)
 cvdht.mort14.fin <- subset(mort14.Svy, AnyCVDHT == 1 & finprob == TRUE)
@@ -232,15 +227,69 @@ table(diab.mort14$variables$DEAD, diab.mort14$variables$CRN, useNA = "ifany")
 ########################################################################################
 #svycoxph and survival to run the regressions
 #crude/unadjusted
-
-
-table(is.na(diab.mort14.fin$variables$fuTime))
-table(is.na(diab.mort14.fin$variables$CRN))
-table(is.na(diab.mort14.fin$variables$DzSpecificDiab_NoNA))
-
-mod1.diab <- svycoxph(formula = Surv(fuTime, DzSpecificDiab_NoNA)~factor(CRN),
+mod1.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
                       design = diab.mort14.fin)
 
 summary(mod1.diab)
-#to display hazard ratio (exp(b))
-exp(mod1.diab$coefficients)
+#to get N(%)
+diab_mort_n <- mod1.diab$nevent
+diab_mort_perc <- mod1.diab$nevent / mod1.diab$n
+
+
+mod1.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN),
+                      design = cvd.mort14.fin)
+
+summary(mod1.cvd)
+#to get N(%)
+cvd_mort_n <- mod1.cvd$nevent
+cvd_mort_perc <- mod1.cvd$nevent / mod1.cvd$n
+
+mod1.cvdht <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN),
+                     design = cvdht.mort14.fin)
+
+summary(mod1.cvdht)
+#to get N(%)
+cvdht_mort_n <- mod1.cvdht$nevent
+cvdht_mort_perc <- mod1.cvdht$nevent / mod1.cvdht$n
+
+###################################################################################
+#now do adjusted models: for sex, age, insurance, income, education 
+#(BMI, Race, Smoking per dag shouldn't be adjusted)
+
+#Diabetes
+mod2.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR)+ AGE +
+                        factor(IncomeR) + factor(SEX) + factor(InsType),
+                      design = diab.mort14.fin)
+
+summary(mod2.diab)
+
+#CVD
+mod2.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN) + factor(EduR)+ AGE +
+                       factor(IncomeR) + factor(SEX) + factor(InsType),
+                     design = cvd.mort14.fin)
+
+summary(mod2.cvd)
+
+#CVD plus hypertension
+mod2.cvdht <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
+                         factor(IncomeR) + factor(SEX) + factor(InsType),
+                       design = cvdht.mort14.fin)
+
+summary(mod2.cvdht)
+
+#get follow up times
+svyquantile(~fuTime, design = diab.mort14.fin, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = diab.mort14.fin, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = diab.mort14.fin, quantiles = .75, na.rm = T)
+
+svyquantile(~fuTime, design = cvd.mort14.fin, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = cvd.mort14.fin, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = cvd.mort14.fin, quantiles = .75, na.rm = T)
+
+svyquantile(~fuTime, design = cvdht.mort14.fin, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = cvdht.mort14.fin, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = cvdht.mort14.fin, quantiles = .75, na.rm = T)
+
+
+##############################################################################
+#now do all-cause mortality

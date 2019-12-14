@@ -2,7 +2,7 @@
 #September 29, 2019
 #DAGs for diabetes mortality and medication stress
 library(ggdag)
-theme_set(theme_dag())
+#theme_set(theme_dag())
 
 
 
@@ -69,16 +69,24 @@ ggdag(dag3, text =F, use_labels = "label")
 ggdag_adjustment_set(dag, text = FALSE, use_labels = "label", shadow = TRUE)
 ggdag_adjustment_set(dag3, text = TRUE)
 
-
-
-dag3 <-dagify(ER ~ Concord + SRhealth + MenDis + Chronic + Insurance+ Age+ Edu + Income +Race,
-              Concord ~ Insurance + Race + Edu + Income,
-              Insurance ~ Income + Age + Race + Edu,
+dag4 <-dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN + Age + Sex + Income,
+              Smoking ~ Edu,
+              Insurance ~ Income + Age,
+              CRN ~ Income + Age + Sex + Insurance + Edu,
+              BMI ~ Race + Income + Edu,
+              Income ~ Race + Edu + Sex + Age,
               Edu ~ Race,
-              Income ~ Edu + Race,
-              MenDis ~ Race,
-              Chronic ~ Edu + Income + Age + Race +MenDis,
-              SRhealth ~ Chronic + MenDis + Age + Race + Income,
-              exposure = "Concord",
-              outcome = "ER") 
-
+              labels = c("CRN" = "CRN", 
+                         "Smoking" = "Smoking",
+                         "Insurance" = "Insurance",
+                         "BMI" = "BMI", 
+                         "Income" = "Income",
+                         "Mortality" = "Dz Specific Mortality",
+                         "Race"= "Race",
+                         "Age"= "Age",
+                         "Sex"= "Sex",
+                         "Edu" = "Education"),
+              exposure = "CRN",
+              outcome = "Mortality") 
+ggdag(dag4, text = T) + theme_dag()
+ggdag_adjustment_set(dag4, text = T, use_labels = F, shadow = TRUE)
