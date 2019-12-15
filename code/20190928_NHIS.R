@@ -456,7 +456,9 @@ eligible <- eligible %>%
 #yes if ybarmedr is as yes or any of the the 3 specific measures are a yes
 eligible <- eligible %>%
   mutate(CRN = ifelse(BarrierMedR == 1 | skipMed == 1 | lessMed == 1 | delayMed == 1, 1, 
-                      ifelse(is.na(BarrierMedR), NA, 0)))
+                      ifelse(is.na(BarrierMedR) & is.na(skipMed) &is.na(lessMed) &is.na(delayMed), NA, 0)))
+
+table(eligible$CRN2, eligible$CRN, useNA = "ifany")
 
 CreateCatTable(vars = c("skipMed", "delayMed", "CheapMed", "foreignMed", "alternateMed"),
                strata = "PovertyBinaryY",

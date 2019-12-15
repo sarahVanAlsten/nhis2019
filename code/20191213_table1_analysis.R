@@ -75,6 +75,8 @@ table(eligible$cvdMort, useNA = "ifany")
 table(eligible$cvdHtMort, useNA = "ifany")
 ########################################################
 #IPUMS constructed a strata var to use to combine years
+#2006 - 2014 is statistically independent from 2000 - 2005; the two need to be pooled
+#separately
 
 #sample adult weights. Need 1 for vars assesed in all years, another
 #for those assessed in 2010-2014 (the more descriptive CRN items)
@@ -99,7 +101,6 @@ finprob <- (is.finite(mort14.Svy$prob))
 finprob10 <- (is.finite(mort10.Svy$prob))
 prop.table(table(finprob))
 prop.table(table(finprob10))
-
 
 eligible$finprob <- finprob
 
@@ -128,9 +129,9 @@ diab.mort14.fin <- subset(mort14.Svy, DiabetesRec == 1 & finprob == TRUE)
 cvd.mort14.fin <- subset(mort14.Svy, AnyCVD == 1 & finprob == TRUE)
 cvdht.mort14.fin <- subset(mort14.Svy, AnyCVDHT == 1 & finprob == TRUE)
 
-diab.mort10.fin <- subset(mort10.Svy.fin, DiabetesRec == 1  & finprob == TRUE)
-cvd.mort10.fin <- subset(mort10.Svy.fin, AnyCVD == 1 & finprob == TRUE)
-cvdht.mort10.fin <- subset(mort10.Svy.fin, AnyCVDHT == 1 & finprob == TRUE)
+diab.mort10.fin <- subset(mort10.Svy, DiabetesRec == 1  & finprob10 == TRUE)
+cvd.mort10.fin <- subset(mort10.Svy, AnyCVD == 1 & finprob10 == TRUE)
+cvdht.mort10.fin <- subset(mort10.Svy, AnyCVDHT == 1 & finprob10 == TRUE)
 ###############################################################################
 #clean up environment to help things run faster
 rm(eligible)
@@ -293,3 +294,253 @@ svyquantile(~fuTime, design = cvdht.mort14.fin, quantiles = .75, na.rm = T)
 
 ##############################################################################
 #now do all-cause mortality
+#crude/unadjusted
+mod1.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                      design = diab.mort14.fin)
+
+summary(mod1.diab.allcause)
+#to get N(%)
+diabAC_mort_n <- mod1.diab.allcause$nevent
+diabAC_mort_perc <- mod1.diab.allcause$nevent / mod1.diab.allcause$n
+
+
+mod1.cvd.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                     design = cvd.mort14.fin)
+
+summary(mod1.cvd.allcause)
+#to get N(%)
+cvdAC_mort_n <- mod1.cvd.allcause$nevent
+cvdAC_mort_perc <- mod1.cvd.allcause$nevent / mod1.cvd.allcause$n
+
+mod1.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                       design = cvdht.mort14.fin)
+
+summary(mod1.cvdht.allcause)
+#to get N(%)
+cvdhtAC_mort_n <- mod1.cvdht.allcause$nevent
+cvdhtAC_mort_perc <- mod1.cvdht.allcause$nevent / mod1.cvdht.allcause$n
+
+###################################################################################
+#now do adjusted models: for sex, age, insurance, income, education 
+#(BMI, Race, Smoking per dag shouldn't be adjusted)
+
+##talk to Dr. Salvo about using diff adjustment for all cause vs dz specific...
+#Also ask about follow up time: should that be reported for only those with the outcome
+#Diabetes
+mod2.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                       factor(IncomeR) + factor(SEX) + factor(InsType),
+                     design = diab.mort14.fin)
+
+#mod2.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+#                       factor(IncomeR) + factor(SEX) + factor(InsType) + factor(CancerEvBin) +
+#                         factor(SmokeR) + BMI + factor(AnyCVDHT),
+#                     design = diab.mort14.fin)
+
+summary(mod2.diab.allcause)
+
+#CVD
+mod2.cvd.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                       factor(IncomeR) + factor(SEX) + factor(InsType),
+                     design = cvd.mort14.fin)
+
+summary(mod2.cvd.allcause)
+
+#CVD plus hypertension
+mod2.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                         factor(IncomeR) + factor(SEX) + factor(InsType),
+                       design = cvdht.mort14.fin)
+
+summary(mod2.cvdht.allcause)
+
+#get follow up times
+svyquantile(~fuTime, design = diab.mort14.fin, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = diab.mort14.fin, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = diab.mort14.fin, quantiles = .75, na.rm = T)
+
+svyquantile(~fuTime, design = cvd.mort14.fin, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = cvd.mort14.fin, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = cvd.mort14.fin, quantiles = .75, na.rm = T)
+
+svyquantile(~fuTime, design = cvdht.mort14.fin, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = cvdht.mort14.fin, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = cvdht.mort14.fin, quantiles = .75, na.rm = T)
+
+
+#####################################################################################
+#if follow up times are those that are specific to those with the outcome only...
+median(diab.mort14.fin$variables[diab.mort14.fin$variables$DiabetesRec ==1 & 
+                                   !is.na(diab.mort14.fin$variables$CRN) & 
+                                   diab.mort14.fin$variables$diabMort == 1,
+                                 "fuTime"], na.rm = T)
+
+median(diab.mort14.fin$variables[diab.mort14.fin$variables$DiabetesRec ==1 & 
+                                   !is.na(diab.mort14.fin$variables$CRN) & 
+                                   diab.mort14.fin$variables$diabMort == 0,
+                                 "fuTime"], na.rm = T)
+
+median(cvd.mort14.fin$variables[cvd.mort14.fin$variables$AnyCVD ==1 & 
+                                   !is.na(cvd.mort14.fin$variables$CRN) & 
+                                   cvd.mort14.fin$variables$cvdMort == 1,
+                                 "fuTime"], na.rm = T)
+
+median(cvd.mort14.fin$variables[cvd.mort14.fin$variables$AnyCVD==1 & 
+                                  !is.na(cvd.mort14.fin$variables$CRN) & 
+                                  cvd.mort14.fin$variables$cvdMort == 0,
+                                "fuTime"], na.rm = T)
+
+median(cvdht.mort14.fin$variables[cvdht.mort14.fin$variables$AnyCVDHT ==1 & 
+                                  !is.na(cvdht.mort14.fin$variables$CRN) & 
+                                  cvdht.mort14.fin$variables$cvdHtMort == 1,
+                                "fuTime"], na.rm = T)
+
+median(cvdht.mort14.fin$variables[cvdht.mort14.fin$variables$AnyCVDHT ==1 & 
+                                  !is.na(cvdht.mort14.fin$variables$CRN) & 
+                                  cvdht.mort14.fin$variables$cvdHtMort == 0,
+                                "fuTime"], na.rm = T)
+#####################################################################################
+#Restricting Analysis to 2000 - 2010 years
+diab.mort14.fin$variables %>%
+     group_by(is.na(CRN)) %>%
+     summarise(sum(diabMort == 1, na.rm = T),
+                             sum(ASTATFLG ==1, na.rm = T))
+#######################################################################################
+#svycoxph and survival to run the regressions
+#crude/unadjusted
+mod1.early.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
+                      design = diab.mort10.fin)
+
+summary(mod1.early.diab)
+#to get N(%)
+diab_mort_n <- mod1.diab$nevent
+diab_mort_perc <- mod1.diab$nevent / mod1.diab$n
+
+
+mod1.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN),
+                     design = cvd.mort10.fin)
+
+summary(mod1.cvd)
+#to get N(%)
+cvd_mort_n <- mod1.cvd$nevent
+cvd_mort_perc <- mod1.cvd$nevent / mod1.cvd$n
+
+mod1.cvdht <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN),
+                       design = cvdht.mort10.fin)
+
+summary(mod1.cvdht)
+#to get N(%)
+cvdht_mort_n <- mod1.cvdht$nevent
+cvdht_mort_perc <- mod1.cvdht$nevent / mod1.cvdht$n
+
+###################################################################################
+#now do adjusted models: for sex, age, insurance, income, education 
+#(BMI, Race, Smoking per dag shouldn't be adjusted)
+
+#Diabetes
+mod2.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR)+ AGE +
+                        factor(IncomeR) + factor(SEX) + factor(InsType),
+                      design = diab.mort10.fin)
+
+summary(mod2.diab)
+
+#CVD
+mod2.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN) + factor(EduR)+ AGE +
+                       factor(IncomeR) + factor(SEX) + factor(InsType),
+                     design = cvd.mort10.fin)
+
+summary(mod2.cvd)
+
+#CVD plus hypertension
+mod2.cvdht <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
+                         factor(IncomeR) + factor(SEX) + factor(InsType),
+                       design = cvdht.mort10.fin)
+
+summary(mod2.cvdht)
+
+#get follow up times
+svyquantile(~fuTime, design = diab.mort10.fin, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = diab.mort10.fin, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = diab.mort10.fin, quantiles = .75, na.rm = T)
+
+svyquantile(~fuTime, design = cvd.mort10.fin, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = cvd.mort10.fin, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = cvd.mort10.fin, quantiles = .75, na.rm = T)
+
+svyquantile(~fuTime, design = cvdht.mort10.fin, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = cvdht.mort10.fin, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = cvdht.mort10.fin, quantiles = .75, na.rm = T)
+
+
+##############################################################################
+#now do all-cause mortality
+#crude/unadjusted
+mod1.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                               design = diab.mort10.fin)
+
+summary(mod1.diab.allcause)
+#to get N(%)
+diabAC_mort_n <- mod1.diab.allcause$nevent
+diabAC_mort_perc <- mod1.diab.allcause$nevent / mod1.diab.allcause$n
+
+
+mod1.cvd.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                              design = cvd.mort10.fin)
+
+summary(mod1.cvd.allcause)
+#to get N(%)
+cvdAC_mort_n <- mod1.cvd.allcause$nevent
+cvdAC_mort_perc <- mod1.cvd.allcause$nevent / mod1.cvd.allcause$n
+
+mod1.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                                design = cvdht.mort10.fin)
+
+summary(mod1.cvdht.allcause)
+#to get N(%)
+cvdhtAC_mort_n <- mod1.cvdht.allcause$nevent
+cvdhtAC_mort_perc <- mod1.cvdht.allcause$nevent / mod1.cvdht.allcause$n
+
+###################################################################################
+#now do adjusted models: for sex, age, insurance, income, education 
+#(BMI, Race, Smoking per dag shouldn't be adjusted)
+
+##talk to Dr. Salvo about using diff adjustment for all cause vs dz specific...
+#Also ask about follow up time: should that be reported for only those with the outcome
+#Diabetes
+mod2.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                 factor(IncomeR) + factor(SEX) + factor(InsType),
+                               design = diab.mort10.fin)
+
+#mod2.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+#                       factor(IncomeR) + factor(SEX) + factor(InsType) + factor(CancerEvBin) +
+#                         factor(SmokeR) + BMI + factor(AnyCVDHT),
+#                     design = diab.mort10.fin)
+
+summary(mod2.diab.allcause)
+
+#CVD
+mod2.cvd.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                factor(IncomeR) + factor(SEX) + factor(InsType),
+                              design = cvd.mort10.fin)
+
+summary(mod2.cvd.allcause)
+
+#CVD plus hypertension
+mod2.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                  factor(IncomeR) + factor(SEX) + factor(InsType),
+                                design = cvdht.mort10.fin)
+
+summary(mod2.cvdht.allcause)
+
+#get follow up times
+svyquantile(~fuTime, design = diab.mort10.fin, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = diab.mort10.fin, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = diab.mort10.fin, quantiles = .75, na.rm = T)
+
+svyquantile(~fuTime, design = cvd.mort10.fin, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = cvd.mort10.fin, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = cvd.mort10.fin, quantiles = .75, na.rm = T)
+
+svyquantile(~fuTime, design = cvdht.mort10.fin, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = cvdht.mort10.fin, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = cvdht.mort10.fin, quantiles = .75, na.rm = T)
+
+#####################################################################################
