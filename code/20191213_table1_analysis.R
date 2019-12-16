@@ -32,6 +32,13 @@ library(tidyverse)
 #read in the data
 eligible <- read.csv("data\\eligible.csv")
 
+eligible <- eligible %>%
+  mutate(CRN = ifelse(is.na(BarrierMedR) & YEAR <=2010, NA,
+                      ifelse(is.na(BarrierMedR)& is.na(skipMed) & is.na(lessMed) &is.na(delayMed) & (YEAR >=2011), NA,
+                             ifelse(BarrierMedR == 0 & YEAR <=2010, 0,
+                                    ifelse(BarrierMedR == 1 | skipMed == 1 | lessMed == 1 | delayMed == 1, 1, 0)))))
+         
+
 table(eligible$CRN, eligible$ASTATFLG, useNA = "ifany")
 
 #the reason it's 15 and 11 is because 2000-2014 is actually 15 total cycles,
@@ -96,7 +103,8 @@ mort14.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight14
                         nest = TRUE, data = eligible)
 
 mort10.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight10,
-                        nest = TRUE, data = eligible)
+                        nest = TRUE, data = eligible[eligible$YEAR <2010,])
+
 
 finprob <- (is.finite(mort14.Svy$prob))
 finprob10 <- (is.finite(mort10.Svy$prob))
@@ -104,6 +112,7 @@ prop.table(table(finprob))
 prop.table(table(finprob10))
 
 eligible$finprob <- finprob
+
 
 ####################################################################
 #per survey package guidelines, use subset() to get appropriate subpopulation estimates
@@ -133,6 +142,7 @@ cvdht.mort14.fin <- subset(mort14.Svy, AnyCVDHT == 1 & finprob == TRUE)
 diab.mort10.fin <- subset(mort10.Svy, DiabetesRec == 1  & finprob10 == TRUE)
 cvd.mort10.fin <- subset(mort10.Svy, AnyCVD == 1 & finprob10 == TRUE)
 cvdht.mort10.fin <- subset(mort10.Svy, AnyCVDHT == 1 & finprob10 == TRUE)
+
 ###############################################################################
 #clean up environment to help things run faster
 rm(eligible)
@@ -400,13 +410,10 @@ median(cvdht.mort14.fin$variables[cvdht.mort14.fin$variables$AnyCVDHT ==1 &
                                 "fuTime"], na.rm = T)
 #####################################################################################
 #Restricting Analysis to 2000 - 2010 years
-diab.mort14.fin$variables %>%
-     group_by(is.na(CRN)) %>%
-     summarise(sum(diabMort == 1, na.rm = T),
-                             sum(ASTATFLG ==1, na.rm = T))
 #######################################################################################
 #svycoxph and survival to run the regressions
 #crude/unadjusted
+
 mod1.early.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
                       design = diab.mort10.fin)
 
