@@ -315,53 +315,63 @@ cvdht_mort_perc <- mod1.cvdht.sa$nevent / mod1.cvdht.sa$n
 #(BMI, Race, Smoking per dag shouldn't be adjusted)
 
 #Diabetes
-mod2.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR)+ AGE +
-                        factor(IncomeR) + factor(SEX) + factor(InsType),
-                      design = diab.mort14.fin)
+#mod2.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR)+ AGE +
+#                        factor(IncomeR) + factor(SEX) + factor(InsType),
+#                      design = diab.mort14.fin)
 
-summary(mod2.diab)
+#summary(mod2.diab)
 
 mod2.diab.sa <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR)+ AGE +
                         factor(IncomeR) + factor(SEX) + factor(InsType),
                       design = diab.mort14.fin.sa)
 
 summary(mod2.diab.sa)
-
-
-
+###########################################################################
 #CVD
-mod2.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN) + factor(EduR)+ AGE +
+#mod2.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN) + factor(EduR)+ AGE +
+#                       factor(IncomeR) + factor(SEX) + factor(InsType),
+#                     design = cvd.mort14.fin)
+
+#summary(mod2.cvd)
+
+mod2.cvd.sa <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN) + factor(EduR)+ AGE +
                        factor(IncomeR) + factor(SEX) + factor(InsType),
-                     design = cvd.mort14.fin)
+                     design = cvd.mort14.fin.sa)
 
-summary(mod2.cvd)
-
+summary(mod2.cvd.sa)
+###############################################################################
 #CVD plus hypertension
-mod2.cvdht <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
+mod2.cvdht.sa <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
                          factor(IncomeR) + factor(SEX) + factor(InsType),
-                       design = cvdht.mort14.fin)
+                       design = cvdht.mort14.fin.sa)
 
-summary(mod2.cvdht)
+summary(mod2.cvdht.sa)
 
+#mod2.cvdht <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
+#                         factor(IncomeR) + factor(SEX) + factor(InsType),
+#                       design = cvdht.mort14.fin)
+
+#summary(mod2.cvdht)
+####################################################################################
 #get follow up times
-svyquantile(~fuTime, design = diab.mort14.fin, quantiles = .5, na.rm = T)
-svyquantile(~fuTime, design = diab.mort14.fin, quantiles = .25, na.rm = T)
-svyquantile(~fuTime, design = diab.mort14.fin, quantiles = .75, na.rm = T)
+svyquantile(~fuTime, design = diab.mort14.fin.sa, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = diab.mort14.fin.sa, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = diab.mort14.fin.sa, quantiles = .75, na.rm = T)
 
-svyquantile(~fuTime, design = cvd.mort14.fin, quantiles = .5, na.rm = T)
-svyquantile(~fuTime, design = cvd.mort14.fin, quantiles = .25, na.rm = T)
-svyquantile(~fuTime, design = cvd.mort14.fin, quantiles = .75, na.rm = T)
+svyquantile(~fuTime, design = cvd.mort14.fin.sa, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = cvd.mort14.fin.sa, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = cvd.mort14.fin.sa, quantiles = .75, na.rm = T)
 
-svyquantile(~fuTime, design = cvdht.mort14.fin, quantiles = .5, na.rm = T)
-svyquantile(~fuTime, design = cvdht.mort14.fin, quantiles = .25, na.rm = T)
-svyquantile(~fuTime, design = cvdht.mort14.fin, quantiles = .75, na.rm = T)
+svyquantile(~fuTime, design = cvdht.mort14.fin.sa, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = cvdht.mort14.fin.sa, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = cvdht.mort14.fin.sa, quantiles = .75, na.rm = T)
 
 
 ##############################################################################
 #now do all-cause mortality
 #crude/unadjusted
 mod1.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
-                      design = diab.mort14.fin)
+                      design = diab.mort14.fin.sa)
 
 summary(mod1.diab.allcause)
 #to get N(%)
@@ -370,7 +380,7 @@ diabAC_mort_perc <- mod1.diab.allcause$nevent / mod1.diab.allcause$n
 
 
 mod1.cvd.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
-                     design = cvd.mort14.fin)
+                     design = cvd.mort14.fin.sa)
 
 summary(mod1.cvd.allcause)
 #to get N(%)
@@ -378,12 +388,37 @@ cvdAC_mort_n <- mod1.cvd.allcause$nevent
 cvdAC_mort_perc <- mod1.cvd.allcause$nevent / mod1.cvd.allcause$n
 
 mod1.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
-                       design = cvdht.mort14.fin)
+                       design = cvdht.mort14.fin.sa)
 
 summary(mod1.cvdht.allcause)
 #to get N(%)
 cvdhtAC_mort_n <- mod1.cvdht.allcause$nevent
 cvdhtAC_mort_perc <- mod1.cvdht.allcause$nevent / mod1.cvdht.allcause$n
+######################################################################
+# mod1.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+#                                design = diab.mort14.fin)
+# 
+# summary(mod1.diab.allcause)
+# #to get N(%)
+# diabAC_mort_n <- mod1.diab.allcause$nevent
+# diabAC_mort_perc <- mod1.diab.allcause$nevent / mod1.diab.allcause$n
+# 
+# 
+# mod1.cvd.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+#                               design = cvd.mort14.fin)
+# 
+# summary(mod1.cvd.allcause)
+# #to get N(%)
+# cvdAC_mort_n <- mod1.cvd.allcause$nevent
+# cvdAC_mort_perc <- mod1.cvd.allcause$nevent / mod1.cvd.allcause$n
+# 
+# mod1.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+#                                 design = cvdht.mort14.fin)
+# 
+# summary(mod1.cvdht.allcause)
+# #to get N(%)
+# cvdhtAC_mort_n <- mod1.cvdht.allcause$nevent
+# cvdhtAC_mort_perc <- mod1.cvdht.allcause$nevent / mod1.cvdht.allcause$n
 
 ###################################################################################
 #now do adjusted models: for sex, age, insurance, income, education 
@@ -394,7 +429,7 @@ cvdhtAC_mort_perc <- mod1.cvdht.allcause$nevent / mod1.cvdht.allcause$n
 #Diabetes
 mod2.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
                        factor(IncomeR) + factor(SEX) + factor(InsType),
-                     design = diab.mort14.fin)
+                     design = diab.mort14.fin.sa)
 
 #mod2.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
 #                       factor(IncomeR) + factor(SEX) + factor(InsType) + factor(CancerEvBin) +
@@ -406,14 +441,14 @@ summary(mod2.diab.allcause)
 #CVD
 mod2.cvd.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
                        factor(IncomeR) + factor(SEX) + factor(InsType),
-                     design = cvd.mort14.fin)
+                     design = cvd.mort14.fin.sa)
 
 summary(mod2.cvd.allcause)
 
 #CVD plus hypertension
 mod2.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
                          factor(IncomeR) + factor(SEX) + factor(InsType),
-                       design = cvdht.mort14.fin)
+                       design = cvdht.mort14.fin.sa)
 
 summary(mod2.cvdht.allcause)
 
@@ -469,96 +504,96 @@ median(cvdht.mort14.fin$variables[cvdht.mort14.fin$variables$AnyCVDHT ==1 &
 #crude/unadjusted
 
 mod1.early.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
-                      design = diab.mort10.fin)
+                      design = diab.mort10.fin.sa)
 
 summary(mod1.early.diab)
 #to get N(%)
-diab_mort_n <- mod1.diab$nevent
-diab_mort_perc <- mod1.diab$nevent / mod1.diab$n
+diab_mort_n.2 <- mod1.early.diab$nevent
+diab_mort_perc.2 <- mod1.early.diab$nevent / mod1.early.diab$n
 
 
-mod1.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN),
-                     design = cvd.mort10.fin)
+mod1.early.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN),
+                     design = cvd.mort10.fin.sa)
 
-summary(mod1.cvd)
+summary(mod1.early.cvd)
 #to get N(%)
-cvd_mort_n <- mod1.cvd$nevent
-cvd_mort_perc <- mod1.cvd$nevent / mod1.cvd$n
+cvd_mort_n.2 <- mod1.early.cvd$nevent
+cvd_mort_perc.2 <- mod1.early.cvd$nevent / mod1.early.cvd$n
 
-mod1.cvdht <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN),
-                       design = cvdht.mort10.fin)
+mod1.early.cvdht <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN),
+                       design = cvdht.mort10.fin.sa)
 
-summary(mod1.cvdht)
+summary(mod1.early.cvdht)
 #to get N(%)
-cvdht_mort_n <- mod1.cvdht$nevent
-cvdht_mort_perc <- mod1.cvdht$nevent / mod1.cvdht$n
+cvdht_mort_n.2 <- mod1.early.cvdht$nevent
+cvdht_mort_perc.2 <- mod1.early.cvdht$nevent / mod1.early.cvdht$n
 
 ###################################################################################
 #now do adjusted models: for sex, age, insurance, income, education 
 #(BMI, Race, Smoking per dag shouldn't be adjusted)
 
 #Diabetes
-mod2.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR)+ AGE +
+mod2.early.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR)+ AGE +
                         factor(IncomeR) + factor(SEX) + factor(InsType),
-                      design = diab.mort10.fin)
+                      design = diab.mort10.fin.sa)
 
-summary(mod2.diab)
+summary(mod2.early.diab)
 
 #CVD
-mod2.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN) + factor(EduR)+ AGE +
+mod2.early.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN) + factor(EduR)+ AGE +
                        factor(IncomeR) + factor(SEX) + factor(InsType),
-                     design = cvd.mort10.fin)
+                     design = cvd.mort10.fin.sa)
 
-summary(mod2.cvd)
+summary(mod2.early.cvd)
 
 #CVD plus hypertension
-mod2.cvdht <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
+mod2.early.cvdht <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
                          factor(IncomeR) + factor(SEX) + factor(InsType),
-                       design = cvdht.mort10.fin)
+                       design = cvdht.mort10.fin.sa)
 
-summary(mod2.cvdht)
+summary(mod2.early.cvdht)
 
 #get follow up times
-svyquantile(~fuTime, design = diab.mort10.fin, quantiles = .5, na.rm = T)
-svyquantile(~fuTime, design = diab.mort10.fin, quantiles = .25, na.rm = T)
-svyquantile(~fuTime, design = diab.mort10.fin, quantiles = .75, na.rm = T)
+svyquantile(~fuTime, design = diab.mort10.fin.sa, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = diab.mort10.fin.sa, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = diab.mort10.fin.sa, quantiles = .75, na.rm = T)
 
-svyquantile(~fuTime, design = cvd.mort10.fin, quantiles = .5, na.rm = T)
-svyquantile(~fuTime, design = cvd.mort10.fin, quantiles = .25, na.rm = T)
-svyquantile(~fuTime, design = cvd.mort10.fin, quantiles = .75, na.rm = T)
+svyquantile(~fuTime, design = cvd.mort10.fin.sa, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = cvd.mort10.fin.sa, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = cvd.mort10.fin.sa, quantiles = .75, na.rm = T)
 
-svyquantile(~fuTime, design = cvdht.mort10.fin, quantiles = .5, na.rm = T)
-svyquantile(~fuTime, design = cvdht.mort10.fin, quantiles = .25, na.rm = T)
-svyquantile(~fuTime, design = cvdht.mort10.fin, quantiles = .75, na.rm = T)
+svyquantile(~fuTime, design = cvdht.mort10.fin.sa, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = cvdht.mort10.fin.sa, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = cvdht.mort10.fin.sa, quantiles = .75, na.rm = T)
 
 
 ##############################################################################
 #now do all-cause mortality
 #crude/unadjusted
-mod1.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
-                               design = diab.mort10.fin)
+mod1.early.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                               design = diab.mort10.fin.sa)
 
-summary(mod1.diab.allcause)
+summary(mod1.early.diab.allcause)
 #to get N(%)
-diabAC_mort_n <- mod1.diab.allcause$nevent
-diabAC_mort_perc <- mod1.diab.allcause$nevent / mod1.diab.allcause$n
+diabAC_mort_n.2 <- mod1.early.diab.allcause$nevent
+diabAC_mort_perc.2 <- mod1.early.diab.allcause$nevent / mod1.early.diab.allcause$n
 
 
-mod1.cvd.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
-                              design = cvd.mort10.fin)
+mod1.early.cvd.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                              design = cvd.mort10.fin.sa)
 
-summary(mod1.cvd.allcause)
+summary(mod1.early.cvd.allcause)
 #to get N(%)
-cvdAC_mort_n <- mod1.cvd.allcause$nevent
-cvdAC_mort_perc <- mod1.cvd.allcause$nevent / mod1.cvd.allcause$n
+cvdAC_mort_n.2 <- mod1.early.cvd.allcause$nevent
+cvdAC_mort_perc.2 <- mod1.early.cvd.allcause$nevent / mod1.early.cvd.allcause$n
 
-mod1.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
-                                design = cvdht.mort10.fin)
+mod1.early.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                                design = cvdht.mort10.fin.sa)
 
-summary(mod1.cvdht.allcause)
+summary(mod1.early.cvdht.allcause)
 #to get N(%)
-cvdhtAC_mort_n <- mod1.cvdht.allcause$nevent
-cvdhtAC_mort_perc <- mod1.cvdht.allcause$nevent / mod1.cvdht.allcause$n
+cvdhtAC_mort_n.2 <- mod1.early.cvdht.allcause$nevent
+cvdhtAC_mort_perc.2 <- mod1.early.cvdht.allcause$nevent / mod1.early.cvdht.allcause$n
 
 ###################################################################################
 #now do adjusted models: for sex, age, insurance, income, education 
@@ -567,42 +602,25 @@ cvdhtAC_mort_perc <- mod1.cvdht.allcause$nevent / mod1.cvdht.allcause$n
 ##talk to Dr. Salvo about using diff adjustment for all cause vs dz specific...
 #Also ask about follow up time: should that be reported for only those with the outcome
 #Diabetes
-mod2.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+mod2.early.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
                                  factor(IncomeR) + factor(SEX) + factor(InsType),
-                               design = diab.mort10.fin)
+                               design = diab.mort10.fin.sa)
 
-#mod2.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
-#                       factor(IncomeR) + factor(SEX) + factor(InsType) + factor(CancerEvBin) +
-#                         factor(SmokeR) + BMI + factor(AnyCVDHT),
-#                     design = diab.mort10.fin)
 
-summary(mod2.diab.allcause)
+summary(mod2.early.diab.allcause)
 
 #CVD
-mod2.cvd.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+mod2.early.cvd.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
                                 factor(IncomeR) + factor(SEX) + factor(InsType),
-                              design = cvd.mort10.fin)
+                              design = cvd.mort10.fin.sa)
 
-summary(mod2.cvd.allcause)
+summary(mod2.early.cvd.allcause)
 
 #CVD plus hypertension
-mod2.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+mod2.early.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
                                   factor(IncomeR) + factor(SEX) + factor(InsType),
-                                design = cvdht.mort10.fin)
+                                design = cvdht.mort10.fin.sa)
 
-summary(mod2.cvdht.allcause)
-
-#get follow up times
-svyquantile(~fuTime, design = diab.mort10.fin, quantiles = .5, na.rm = T)
-svyquantile(~fuTime, design = diab.mort10.fin, quantiles = .25, na.rm = T)
-svyquantile(~fuTime, design = diab.mort10.fin, quantiles = .75, na.rm = T)
-
-svyquantile(~fuTime, design = cvd.mort10.fin, quantiles = .5, na.rm = T)
-svyquantile(~fuTime, design = cvd.mort10.fin, quantiles = .25, na.rm = T)
-svyquantile(~fuTime, design = cvd.mort10.fin, quantiles = .75, na.rm = T)
-
-svyquantile(~fuTime, design = cvdht.mort10.fin, quantiles = .5, na.rm = T)
-svyquantile(~fuTime, design = cvdht.mort10.fin, quantiles = .25, na.rm = T)
-svyquantile(~fuTime, design = cvdht.mort10.fin, quantiles = .75, na.rm = T)
+summary(mod2.early.cvdht.allcause)
 
 #####################################################################################
