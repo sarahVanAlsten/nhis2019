@@ -52,7 +52,10 @@ eligible<- eligible %>%
   mutate(perWeight14 = PERWEIGHT / 15,
          mortWeight14 = MORTWT / 15,
          mortWeight10 = MORTWT / 11,
-         mortWeight5 = MORTWT / 5)
+         mortWeight5 = MORTWT / 5,
+         mortWeightSA14 = MORTWTSA / 15,
+         mortWeightSA10 = MORTWTSA / 11,
+         mortWeightSA5 = MORTWTSA / 5)
 
 #reconstruct the allcause and dz specific mortality variables
 eligible <- eligible %>%
@@ -92,7 +95,7 @@ samp14.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ sampWeight14
                         nest = TRUE, data = eligible)
 
 samp5.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ sampWeight5,
-                        nest = TRUE, data = eligible)
+                        nest = TRUE, data = eligible[eligible$YEAR > 2010,])
 
 #person weights, for demographic variables
 per14.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ perWeight14,
@@ -103,16 +106,29 @@ mort14.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight14
                         nest = TRUE, data = eligible)
 
 mort10.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight10,
+                        nest = TRUE, data = eligible[eligible$YEAR < 2010,])
+
+mort14sa.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeightSA14,
+                        nest = TRUE, data = eligible)
+
+mort10sa.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeightSA10,
                         nest = TRUE, data = eligible[eligible$YEAR <2010,])
 
 
+#which ones have a finite probability of selection
 finprob <- (is.finite(mort14.Svy$prob))
 finprob10 <- (is.finite(mort10.Svy$prob))
+finprobsa <- (is.finite(mort14sa.Svy$prob))
+finprobsa10 <- (is.finite(mort10sa.Svy$prob))
 prop.table(table(finprob))
 prop.table(table(finprob10))
+prop.table(table(finprobsa))
+prop.table(table(finprobsa10))
 
 eligible$finprob <- finprob
 
+eligible.mini <- eligible[eligible$YEAR < 2010,]
+eligible.mini$finprob10 <- finprob10
 
 ####################################################################
 #per survey package guidelines, use subset() to get appropriate subpopulation estimates
@@ -143,14 +159,22 @@ diab.mort10.fin <- subset(mort10.Svy, DiabetesRec == 1  & finprob10 == TRUE)
 cvd.mort10.fin <- subset(mort10.Svy, AnyCVD == 1 & finprob10 == TRUE)
 cvdht.mort10.fin <- subset(mort10.Svy, AnyCVDHT == 1 & finprob10 == TRUE)
 
+diab.mort14.fin.sa <- subset(mort14sa.Svy, DiabetesRec == 1 & finprobsa == TRUE)
+cvd.mort14.fin.sa <- subset(mort14sa.Svy, AnyCVD == 1 & finprobsa == TRUE)
+cvdht.mort14.fin.sa <- subset(mort14sa.Svy, AnyCVDHT == 1 & finprobsa == TRUE)
+
+diab.mort10.fin.sa <- subset(mort10sa.Svy, DiabetesRec == 1  & finprobsa10 == TRUE)
+cvd.mort10.fin.sa <- subset(mort10sa.Svy, AnyCVD == 1 & finprobsa10 == TRUE)
+cvdht.mort10.fin.sa <- subset(mort10sa.Svy, AnyCVDHT == 1 & finprobsa10 == TRUE)
+
 ###############################################################################
 #clean up environment to help things run faster
-rm(eligible)
-rm(per14.Svy)
-rm(mort10.Svy)
-rm(mort14.Svy)
-rm(samp5.Svy)
-rm(samp14.Svy)
+#rm(eligible)
+#rm(per14.Svy)
+#rm(mort10.Svy)
+#rm(mort14.Svy)
+#rm(samp5.Svy)
+#rm(samp14.Svy)
 ######################################################################################
 #now, get descriptive statistics
 #FIRST, for CRN bx assessed in late years
@@ -239,30 +263,52 @@ table(diab.mort14$variables$DEAD, diab.mort14$variables$CRN, useNA = "ifany")
 ########################################################################################
 #svycoxph and survival to run the regressions
 #crude/unadjusted
-mod1.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
-                      design = diab.mort14.fin)
+#mod1.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
+#                      design = diab.mort14.fin)
 
-summary(mod1.diab)
+#summary(mod1.diab)
+
+mod1.diab.sa <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
+                      design = diab.mort14.fin.sa)
+
+summary(mod1.diab.sa)
 #to get N(%)
-diab_mort_n <- mod1.diab$nevent
-diab_mort_perc <- mod1.diab$nevent / mod1.diab$n
+#diab_mort_n <- mod1.diab$nevent
+#diab_mort_perc <- mod1.diab$nevent / mod1.diab$n
+diab_mort_n <- mod1.diab.sa$nevent
+diab_mort_perc <- mod1.diab.sa$nevent / mod1.diab.sa$n
+#########################################################################
+mod1.cvd.sa <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN),
+                      design = cvd.mort14.fin.sa)
 
-
-mod1.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN),
-                      design = cvd.mort14.fin)
-
-summary(mod1.cvd)
+summary(mod1.cvd.sa)
 #to get N(%)
-cvd_mort_n <- mod1.cvd$nevent
-cvd_mort_perc <- mod1.cvd$nevent / mod1.cvd$n
+cvd_mort_n <- mod1.cvd.sa$nevent
+cvd_mort_perc <- mod1.cvd.sa$nevent / mod1.cvd.sa$n
 
-mod1.cvdht <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN),
-                     design = cvdht.mort14.fin)
+#mod1.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN),
+#                     design = cvd.mort14.fin)
 
-summary(mod1.cvdht)
+#summary(mod1.cvd)
 #to get N(%)
-cvdht_mort_n <- mod1.cvdht$nevent
-cvdht_mort_perc <- mod1.cvdht$nevent / mod1.cvdht$n
+#cvd_mort_n <- mod1.cvd$nevent
+#cvd_mort_perc <- mod1.cvd$nevent / mod1.cvd$n
+######################################################
+mod1.cvdht.sa <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN),
+                     design = cvdht.mort14.fin.sa)
+
+summary(mod1.cvdht.sa)
+#to get N(%)
+cvdht_mort_n <- mod1.cvdht.sa$nevent
+cvdht_mort_perc <- mod1.cvdht.sa$nevent / mod1.cvdht.sa$n
+
+# mod1.cvdht <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN),
+#                        design = cvdht.mort14.fin)
+# 
+# summary(mod1.cvdht)
+# #to get N(%)
+# cvdht_mort_n <- mod1.cvdht$nevent
+# cvdht_mort_perc <- mod1.cvdht$nevent / mod1.cvdht$n
 
 ###################################################################################
 #now do adjusted models: for sex, age, insurance, income, education 
@@ -274,6 +320,14 @@ mod2.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR
                       design = diab.mort14.fin)
 
 summary(mod2.diab)
+
+mod2.diab.sa <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR)+ AGE +
+                        factor(IncomeR) + factor(SEX) + factor(InsType),
+                      design = diab.mort14.fin.sa)
+
+summary(mod2.diab.sa)
+
+
 
 #CVD
 mod2.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN) + factor(EduR)+ AGE +
