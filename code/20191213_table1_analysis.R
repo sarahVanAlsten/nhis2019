@@ -78,8 +78,7 @@ table(eligible$cvdHtMort, useNA = "ifany")
 #IPUMS constructed a strata var to use to combine years
 #2006 - 2014 is statistically independent from 2000 - 2005; the two need to be pooled
 #separately
-samp.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ SAMPWEIGHT,
-                        nest = TRUE, data = eligible)
+
 #sample adult weights. Need 1 for vars assesed in all years, another
 #for those assessed in 2010-2014 (the more descriptive CRN items)
 samp14.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ sampWeight14,

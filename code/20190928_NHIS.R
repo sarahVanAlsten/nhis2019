@@ -53,8 +53,8 @@ subData[] <- lapply(subData, unclass)
 
 rm(data)
 rm(ddi)
-eligible <- subData[as.integer(subData$MORTELIG) !=2,] #1= eligible, 2 = under 18, 3= ineligible, will have to weight for eligibility
-
+#eligible <- subData[as.integer(subData$MORTELIG) !=2,] #1= eligible, 2 = under 18, 3= ineligible, will have to weight for eligibility
+eligible <- subData
 
 #diabetes mortality
 eligible %>%
