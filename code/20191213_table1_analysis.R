@@ -13,7 +13,8 @@
 #'STRATA' represents sampling stratum, 'PSU' represent primary sampling unit
 #For pooled analyses, divide WT by number of included years. 
 #I also will need to use subpop option because I am choosing select participants
-#(eg with diabetes, CVD...)
+#(eg with diabetes, CVD...). Might need to go back and undo the exluding those
+#who were initially ineligible bc that might have cuased the issues with infite probability
 ##################################################################################
 #YBARMEDS is in access to care supplement, so it should have SAMPWEIGHT.
 #CRN (the 3 item responses) also asked of SAMPLE adults so should use SAMPWEIGHT
@@ -77,7 +78,8 @@ table(eligible$cvdHtMort, useNA = "ifany")
 #IPUMS constructed a strata var to use to combine years
 #2006 - 2014 is statistically independent from 2000 - 2005; the two need to be pooled
 #separately
-
+samp.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ SAMPWEIGHT,
+                        nest = TRUE, data = eligible)
 #sample adult weights. Need 1 for vars assesed in all years, another
 #for those assessed in 2010-2014 (the more descriptive CRN items)
 samp14.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ sampWeight14,
