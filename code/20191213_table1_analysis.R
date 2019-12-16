@@ -623,4 +623,57 @@ mod2.early.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~facto
 
 summary(mod2.early.cvdht.allcause)
 
-#####################################################################################
+#############################################################
+#now check the assumptions
+#first: the proportional hazards assumption
+#for dz specific mortality
+zph.diab1 <- cox.zph(mod1.diab.sa)
+zph.diab2 <- cox.zph(mod2.diab.sa)
+
+zph.cvd1 <- cox.zph(mod1.cvd.sa)
+zph.cvd2 <- cox.zph(mod2.cvd.sa)
+
+zph.cvd1$table[1,3]
+zph.cvd2$table[1,3]
+
+zph.cvdht1 <- cox.zph(mod1.cvdht.sa)
+zph.cvdht2 <- cox.zph(mod2.cvdht.sa)
+############################################
+#for all cause
+zph.diab1.ac <- cox.zph(mod1.diab.allcause)
+zph.diab2.ac <- cox.zph(mod2.diab.allcause)
+
+zph.cvd1.ac <- cox.zph(mod1.cvd.allcause)
+zph.cvd2.ac <- cox.zph(mod2.cvd.allcause)
+
+zph.cvdht1.ac <- cox.zph(mod1.cvdht.allcause)
+zph.cvdht2.ac <- cox.zph(mod2.cvdht.allcause)
+###############################################
+#for the earlier years
+#for dz specific mortality
+zph.diab1e <- cox.zph(mod1.early.diab)
+zph.diab2e <- cox.zph(mod2.early.diab)
+
+zph.cvd1e <- cox.zph(mod1.early.cvd)
+zph.cvd2e <- cox.zph(mod2.early.cvd)
+
+zph.cvdht1e <- cox.zph(mod1.early.cvdht)
+zph.cvdht2e <- cox.zph(mod2.early.cvdht)
+############################################
+#for all cause
+zph.diab1.ace <- cox.zph(mod1.early.diab.allcause)
+zph.diab2.ace <- cox.zph(mod2.early.diab.allcause)
+
+zph.cvd1.ace <- cox.zph(mod1.early.cvd.allcause)
+zph.cvd2.ace <- cox.zph(mod2.early.cvd.allcause)
+
+zph.cvdht1.ace <- cox.zph(mod1.early.cvdht.allcause)
+zph.cvdht2.ace <- cox.zph(mod2.early.cvdht.allcause)
+
+#put them all into a table to make easier to see
+zph.frame <- data.frame(dzSpec = c(zph.diab1$table[1,3], zph.diab2$table[1,3], zph.cvd1$table[1,3], zph.cvd2$table[1,3], zph.cvdht1$table[1,3], zph.cvdht2$table[1,3]),
+                        allCause = c(zph.diab1.ac$table[1,3], zph.diab2.ac$table[1,3], zph.cvd1.ac$table[1,3], zph.cvd2.ac$table[1,3], zph.cvdht1.ac$table[1,3], zph.cvdht2.ac$table[1,3]),
+                        dzSpecEarly = c(zph.diab1e$table[1,3], zph.diab2e$table[1,3], zph.cvd1e$table[1,3], zph.cvd2e$table[1,3], zph.cvdht1e$table[1,3], zph.cvdht2e$table[1,3]),
+                        allCauseEarly = c(zph.diab1.ace$table[1,3], zph.diab2.ace$table[1,3], zph.cvd1.ace$table[1,3], zph.cvd2.ace$table[1,3], zph.cvdht1.ace$table[1,3], zph.cvdht2.ace$table[1,3]),
+                        mod = c(rep(c("Unadjusted", "Adjusted"), 6)),
+                        condition = c("Diab", "Diab", "CVD", "CVD", "CVDHT", "CVDHT"))
