@@ -51,15 +51,89 @@ zph.cvdht1.ace <- cox.zph(mod1.early.cvdht.allcause)
 zph.cvdht2.ace <- cox.zph(mod2.early.cvdht.allcause)
 
 #put them all into a table to make easier to see
-zph.frame <- data.frame(dzSpec = c(zph.diab1$table[1,3], zph.diab2$table[1,3], zph.cvd1$table[1,3], zph.cvd2$table[1,3], zph.cvdht1$table[1,3], zph.cvdht2$table[1,3]),
+crn.zph.frame <- data.frame(dzSpec = c(zph.diab1$table[1,3], zph.diab2$table[1,3], zph.cvd1$table[1,3], zph.cvd2$table[1,3], zph.cvdht1$table[1,3], zph.cvdht2$table[1,3]),
                         allCause = c(zph.diab1.ac$table[1,3], zph.diab2.ac$table[1,3], zph.cvd1.ac$table[1,3], zph.cvd2.ac$table[1,3], zph.cvdht1.ac$table[1,3], zph.cvdht2.ac$table[1,3]),
                         dzSpecEarly = c(zph.diab1e$table[1,3], zph.diab2e$table[1,3], zph.cvd1e$table[1,3], zph.cvd2e$table[1,3], zph.cvdht1e$table[1,3], zph.cvdht2e$table[1,3]),
                         allCauseEarly = c(zph.diab1.ace$table[1,3], zph.diab2.ace$table[1,3], zph.cvd1.ace$table[1,3], zph.cvd2.ace$table[1,3], zph.cvdht1.ace$table[1,3], zph.cvdht2.ace$table[1,3]),
                         mod = c(rep(c("Unadjusted", "Adjusted"), 6)),
                         condition = c("Diab", "Diab", "CVD", "CVD", "CVDHT", "CVDHT"))
-#in adjusted models, the PH assumption is met for the CRN variable,
-#however, the global PH is not met
+#in adjusted models, the PH assumption is met for the CRN variable, though not usually in unadjusted models
 
+global.zph.frame <- data.frame(dzSpec = c(zph.diab2$table[nrow(zph.diab2$table),3],
+                                          zph.cvd2$table[nrow(zph.cvd2$table),3],
+                                          zph.cvdht2$table[nrow(zph.cvdht2$table),3]),
+                               allCause = c(zph.diab2.ac$table[nrow(zph.diab2.ac$table),3],
+                                            zph.cvd2.ac$table[nrow(zph.cvd2.ac$table),3],
+                                            zph.cvdht2.ac$table[nrow(zph.cvdht2.ac$table),3]),
+                               dzSpecEarly = c(zph.diab2e$table[nrow(zph.diab2e$table),3],
+                                               zph.cvd2e$table[nrow(zph.cvd2e$table),3],
+                                               zph.cvdht2e$table[nrow(zph.cvdht2e$table),3]),
+                               allCauseEarly = c(zph.diab2.ace$table[nrow(zph.diab2.ace$table),3],
+                                                 zph.cvd2.ace$table[nrow(zph.cvd2.ace$table),3],
+                                                 zph.cvdht2.ace$table[nrow(zph.cvdht2.ace$table),3]),
+                               condition = c("Diab", "CVD", "CVDHT"))
+#none of the global PH assumptions are met
+
+##########################################################################################
+#Might be easier to just print out all the places where the assumption is violated
+#only have to do so for adjusted models since unadjusted are already in crn.zph.frame
+
+#write a function to do so
+getPHViolation <- function(zp){
+  zp$table <- as.data.frame(zp$table)
+  names(zp$table) <- c("rho", "chisq", "p")
+  zp$table[zp$table$p < 0.05, ]
+}
+
+#list of everything I want to apply it to:
+zphList <- list(zph.diab2, zph.cvd2, zph.cvdht2,
+                zph.diab2.ac, zph.cvd2.ac, zph.cvdht2.ac,
+                zph.diab2e, zph.cvd2e, zph.cvdht2e,
+                zph.diab2.ace, zph.cvd2.ace, zph.cvdht2.ace)
+
+violatedPH <- lapply(zphList, FUN = getPHViolation)
+#age, sex, income consistently violate
+#education(2) violates in cvdht early. Insurance type for diabetes
+
+#look at the schoedenfeld resid for vars in violation
+#####################################################################
+ggcoxzph(zph.diab2, var = "AGE") #no clear inflection pt
+ggcoxzph(zph.diab2, var = "factor(SEX)2") #inflection around 190 wks
+ggcoxzph(zph.diab2, var = "factor(IncomeR)4") #doesn't visually look bad... outliers really
+ggcoxzph(zph.diab2, var = "factor(IncomeR)5") #same - doesn't look bad just outliers
+
+ggcoxzph(zph.cvd2, var = "AGE") #no clear inflection pt
+ggcoxzph(zph.cvd2, var = "factor(CRN)1") #seems to be slightly increasing
+ggcoxzph(zph.cvd2, var = "factor(SEX)2") #kind of u shaped
+ggcoxzph(zph.cvd2, var = "factor(IncomeR)5") #same - doesn't look bad just outliers
+ggcoxzph(zph.cvd2, var = "factor(InsType)3") #3 strata
+
+ggcoxzph(zph.cvdht2, var = "AGE") #no clear inflection pt
+ggcoxzph(zph.cvdht2, var = "factor(EduR)2") #seems to be slightly increasing
+ggcoxzph(zph.cvdht2, var = "factor(SEX)2") #inflection around 190 wks
+ggcoxzph(zph.cvdht2, var = "factor(IncomeR)5") #same - doesn't look bad just outliers
+ggcoxzph(zph.cvdht2, var = "factor(IncomeR)4") #not bad just outliers
+#################################################################################
+ggcoxzph(zph.diab2.ac, var = "AGE") #no clear inflection pt
+ggcoxzph(zph.diab2.ac, var = "factor(InsType)1") #slight downward slope
+ggcoxzph(zph.diab2.ac, var = "factor(InsType)2") #fairly flat
+ggcoxzph(zph.diab2.ac, var = "factor(InsType)4") #faily flat
+ggcoxzph(zph.diab2.ac, var = "factor(SEX)2") #increasing
+ggcoxzph(zph.diab2.ac, var = "factor(IncomeR)1") #doesn't look bad just outliers
+ggcoxzph(zph.diab2.ac, var = "factor(IncomeR)2") #slight increase
+ggcoxzph(zph.diab2.ac, var = "factor(IncomeR)4") #not bad just outliers
+
+ggcoxzph(zph.cvd2.ac, var = "AGE") #not bad
+ggcoxzph(zph.cvd2.ac, var = "factor(SEX)2") #not bad
+ggcoxzph(zph.cvd2.ac, var = "factor(IncomeR)5") #same - doesn't look bad just outliers
+ggcoxzph(zph.cvd2.ac, var = "factor(IncomeR)4") #not bad just outliers
+
+ggcoxzph(zph.cvdht2.ac, var = "AGE") #none of these are bad
+ggcoxzph(zph.cvdht2.ac, var = "factor(InsType)3") #
+ggcoxzph(zph.cvdht2.ac, var = "factor(IncomeR)3") #
+ggcoxzph(zph.cvdht2.ac, var = "factor(SEX)2") #
+ggcoxzph(zph.cvdht2.ac, var = "factor(IncomeR)5") #slightly increasing
+ggcoxzph(zph.cvdht2.ac, var = "factor(IncomeR)4") #not bad just outliers
 ###########################################################################
 #also need to test for linearity btwn log hazard and continuous predictors
 #and for influential observations
