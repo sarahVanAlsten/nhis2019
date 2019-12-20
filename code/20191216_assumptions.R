@@ -3,7 +3,7 @@
 #Created: Dec 16, 2019
 #check assumptions of coxph
 #Packages used: survey, survminer, survival
-#Last Update: Dec 16, 2019
+#Last Update: Dec 20, 2019
 ################################################################################
 
 #############################################################
@@ -135,6 +135,44 @@ ggcoxzph(zph.cvdht2.ac, var = "factor(SEX)2") #
 ggcoxzph(zph.cvdht2.ac, var = "factor(IncomeR)5") #slightly increasing
 ggcoxzph(zph.cvdht2.ac, var = "factor(IncomeR)4") #not bad just outliers
 ###########################################################################
+#check for the earlier years
+ggcoxzph(zph.diab2e, var = "AGE") #no clear inflection pt - somewhat downward sloping
+ggcoxzph(zph.diab2e, var = "factor(SEX)2") #increasing before 190 wks
+
+ggcoxzph(zph.cvd2e, var = "AGE") #rather U shaped. still inflection at 190wks
+ggcoxzph(zph.cvd2e, var = "factor(IncomeR)5") #just outliers
+ggcoxzph(zph.cvd2e, var = "factor(InsType)3") #outliers on both pos and neg. not straight but not terrible
+
+ggcoxzph(zph.cvdht2e, var = "AGE") #not too bad
+ggcoxzph(zph.cvdht2e, var = "factor(SEX)2") #slow increase
+ggcoxzph(zph.cvdht2e, var = "factor(IncomeR)3") #not bad
+ggcoxzph(zph.cvdht2e, var = "factor(IncomeR)4") #outliers otherwise flat
+ggcoxzph(zph.cvdht2e, var = "factor(EduR)2") #inflection at 700 wks
+####################################################################
+ggcoxzph(zph.diab2.ace, var = "AGE") #slightly u shaped
+ggcoxzph(zph.diab2.ace, var = "factor(SEX)2") #slow increase
+ggcoxzph(zph.diab2.ace, var = "factor(IncomeR)1") #increase just at end
+ggcoxzph(zph.diab2.ace, var = "factor(IncomeR)2") #increase just at end
+ggcoxzph(zph.diab2.ace, var = "factor(IncomeR)4") #fairly flat
+ggcoxzph(zph.diab2.ace, var = "factor(IncomeR)5") #s shaped
+ggcoxzph(zph.diab2.ace, var = "factor(EduR)2") #inflection at 700 wks
+ggcoxzph(zph.diab2.ace, var = "factor(InsType)1") #downward slope
+ggcoxzph(zph.diab2.ace, var = "factor(InsType)2") #fiarly flat
+ggcoxzph(zph.diab2.ace, var = "factor(InsType)4") #slight downward
+
+ggcoxzph(zph.cvd2.ace, var = "factor(SEX)2") #fairly flat
+ggcoxzph(zph.cvd2.ace, var = "factor(IncomeR)2") #fairly flat
+ggcoxzph(zph.cvd2.ace, var = "factor(IncomeR)4") #fairly flat
+ggcoxzph(zph.cvdht2.ace, var = "factor(IncomeR)5") #slight dip to 300
+
+ggcoxzph(zph.cvdht2.ace, var = "factor(SEX)2") #slow increase
+ggcoxzph(zph.cvdht2.ace, var = "factor(IncomeR)2") #dip til 300, though small
+ggcoxzph(zph.cvdht2.ace, var = "factor(IncomeR)4") #fairly flat
+ggcoxzph(zph.cvdht2.ace, var = "factor(IncomeR)5") #fairly flat
+
+# Influential Observations ------------------------------------------------
+
+
 #also need to test for linearity btwn log hazard and continuous predictors
 #and for influential observations
 library(survminer)
