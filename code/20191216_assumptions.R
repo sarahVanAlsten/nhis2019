@@ -171,23 +171,51 @@ ggcoxzph(zph.cvdht2.ace, var = "factor(IncomeR)4") #fairly flat
 ggcoxzph(zph.cvdht2.ace, var = "factor(IncomeR)5") #fairly flat
 
 # Influential Observations ------------------------------------------------
-
-
-#also need to test for linearity btwn log hazard and continuous predictors
-#and for influential observations
 library(survminer)
-#influence: dfbeta
-ggcoxdiagnostics(mod1.diab, type = "dfbeta",
-                 linear.predictions = FALSE, ggtheme = theme_bw()) #looks pretty ok
-ggcoxdiagnostics(mod1.diab, type = "deviance",
-                 linear.predictions = FALSE, ggtheme = theme_bw()) #that does not look not random
+#influence: standardized dfbeta
+mod1.diab.sdfbeta <- resid(mod1.diab, type = "dfbetas")
+plot(mod1.diab.sdfbeta)
+infcase1 <- diab.mort14.fin.sa$variables[mod1.diab.sdfbeta > 0.06,]
+#would exclude these cases by SERIAL identifier... however, there doesn't
+#seem to be anything unusual about them. I'd leave them in.
+table(infcase1$diabMort)
+table(infcase1$SEX)
+median(infcase1$fuTime)
+table(infcase1$YEAR)
+table(infcase1$CRN)
 
-ggcoxdiagnostics(mod2.diab, type = "dfbeta",
-                 linear.predictions = FALSE, ggtheme = theme_bw())
-ggcoxdiagnostics(mod2.diab, type = "deviance",
-                 linear.predictions = FALSE, ggtheme = theme_bw()) #that does not look not random
+#now look at the deviance residuals
+mod1.diab.dev <- resid(mod1.diab, type = "deviance")
+plot(mod1.diab.dev) #supposed to be symmetric around 0, and definetely wider at top than below
+
+#finally look at delta beta (the not standardized dfbeta)
+mod1.diab.dfbeta <- resid(mod1.diab, type = "dfbeta")
+plot(mod1.diab.dfbeta)
+
+#see if they are patterned by death statuse
+index <- 1:nrow(diab.mort14.fin.sa$variables)
+dataTest <- as.data.frame(cbind(mod1.diab.dfbeta, diab.mort14.fin.sa$variables$diabMort, index,
+                                diab.mort14.fin.sa$variables$CRN))
+#for mortality
+ggplot(dataTest, aes(y = mod1.diab.dfbeta, x= index, color = V2))+ geom_point()
+#for CRN
+ggplot(dataTest, aes(y = mod1.diab.dfbeta, x= index, color = V4))+ geom_point()
+
+#examining these possibly influential cases there doesn't seem to be any particular reason for their high 
+#influence... some have CRN, some don't. Some died, some did not. Can try excluding them and see if it makes
+#a differnce.
+mod2.diab.dfbeta <- resid(mod2.diab, type = "dfbeta")
+for (i in 1:ncol(mod2.diab.dfbeta)){
+  plot(mod2.diab.dfbeta[,i])
+}
+
+
+mod1.diab.score <- resid(mod1.diab, type = "score")
+plot(mod1.diab.score)
 
 #####################################################
+
+#also need to test for linearity btwn log hazard and continuous predictors
 #the graphical evaluation is very slow. Get another way.
 martingale.diab <- residuals(mod1.diab, type = "martingale")
 summary(martingale.diab)
