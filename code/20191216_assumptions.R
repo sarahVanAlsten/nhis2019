@@ -192,27 +192,57 @@ plot(mod1.diab.dev) #supposed to be symmetric around 0, and definetely wider at 
 mod1.diab.dfbeta <- resid(mod1.diab, type = "dfbeta")
 plot(mod1.diab.dfbeta)
 
-#see if they are patterned by death statuse
+#see if they are patterned by death status
 index <- 1:nrow(diab.mort14.fin.sa$variables)
 dataTest <- as.data.frame(cbind(mod1.diab.dfbeta, diab.mort14.fin.sa$variables$diabMort, index,
                                 diab.mort14.fin.sa$variables$CRN))
-#for mortality
+
+#for mortality- no clear separation
 ggplot(dataTest, aes(y = mod1.diab.dfbeta, x= index, color = V2))+ geom_point()
-#for CRN
+#for CRN - again, doesn't seem to be clear pattern
 ggplot(dataTest, aes(y = mod1.diab.dfbeta, x= index, color = V4))+ geom_point()
 
 #examining these possibly influential cases there doesn't seem to be any particular reason for their high 
 #influence... some have CRN, some don't. Some died, some did not. Can try excluding them and see if it makes
-#a differnce.
-mod2.diab.dfbeta <- resid(mod2.diab, type = "dfbeta")
-for (i in 1:ncol(mod2.diab.dfbeta)){
-  plot(mod2.diab.dfbeta[,i])
+#a difference, however in general I'd opt for keeping them- at least until looking at the adjusted model
+mod2.diab.sdfbeta <- resid(mod2.diab, type = "dfbetas")
+
+for (i in 1:ncol(mod2.diab.sdfbeta)){
+  plot(mod2.diab.sdfbeta[,i], ylab = names(mod2.diab$coefficients)[i])
 }
 
+#for instype5 : greater than .095
+#for instype4: less than -0.18
+#for instype3: > 0.2 and < -.15
+#for instype2: < -.2
+#for instype1: < -.2
+#for sex: > .075
+#for incomeR5: > 0.4
+#for incomeR4: > .05
+#for incomeR3: nothing too far out
+#for incomeR2: > 0.15
+#for incomeR1 nothing too far out
+#for AGE: < -.15
+#EDUR3 : > .2
+#EDUR2: no huge jumps, potentially the lowest one
+#CRN: > .14 and the <-.08
 
-mod1.diab.score <- resid(mod1.diab, type = "score")
-plot(mod1.diab.score)
+#get the sum for each individual case of how many overly influential pieces it has
+mod2.diab.sdfbeta <- as.data.frame(mod2.diab.sdfbeta) %>%
+  mutate(sumInf = (V1 > .14 | V1 < -.08) + (V2 == min(V2, na.rm = T)) + (V3 > .2) + (V4 < -.15) +
+           (V6 > .15) + (V8 > .05) + (V9 > 0.4) + (V10 > 0.075) + (V11 < -.2) + (V12 < -.2) +
+           (V13 > 0.2 | V13 < -.15) + (V14 < -.18) + (V15 > 0.095))
+  
+table(mod2.diab.sdfbeta$sumInf)
+#at most, 46 influential points (42 = 1, 2 = 2, 1 = 5, 1 = 6)
+mod2.diab.sdfbeta$SEQN <- diab.mort14.fin.sa$variables[!is.na(diab.mort14.fin.sa$variables$CRN) & 
+                                                         !is.na(diab.mort14.fin.sa$variables$EduR) & 
+                                                         !is.na(diab.mort14.fin.sa$variables$AGE)&
+                                                        !is.na(diab.mort14.fin.sa$variables$IncomeR) & 
+                                                         !is.na(diab.mort14.fin.sa$variables$SEX) &
+                                                         !is.na(diab.mort14.fin.sa$variables$InsType), "SEQN"]
 
+mod2.diab.sdfbeta[mod2.diab.sdfbeta$sumInf > 1, "SEQN"]
 #####################################################
 
 #also need to test for linearity btwn log hazard and continuous predictors

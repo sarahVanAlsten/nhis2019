@@ -90,3 +90,30 @@ dag4 <-dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN + Age + S
               outcome = "Mortality") 
 ggdag(dag4, text = T) + theme_dag()
 ggdag_adjustment_set(dag4, text = T, use_labels = F, shadow = TRUE)
+
+
+allCauseDag <- dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN + Age + Sex + Income + Chronic,
+                      Smoking ~ Edu + Race + Sex + Income,
+                      Insurance ~ Income + Age,
+                      CRN ~ Income + Age + Sex + Insurance + Edu + Chronic,
+                      BMI ~ Race + Income + Edu + Smoking + Sex,
+                      Income ~ Race + Edu + Sex + Age,
+                      Edu ~ Race,
+                      Chronic ~ Income + Race + Smoking + Edu + Age,
+                      labels = c("CRN" = "CRN", 
+                                 "Smoking" = "Smoking",
+                                 "Insurance" = "Insurance",
+                                 "BMI" = "BMI", 
+                                 "Income" = "Income",
+                                 "Mortality" = "AC Mortality",
+                                 "Race"= "Race",
+                                 "Age"= "Age",
+                                 "Sex"= "Sex",
+                                 "Edu" = "Education",
+                                 "Chronic" = "Chronic"),
+                      exposure = "CRN",
+                      outcome = "Mortality")
+
+ggdag(allCauseDag, text = T) + theme_dag()
+ggdag_adjustment_set(allCauseDag, text = T, use_labels = F, shadow = TRUE)
+#same adjustments as earlier PLUS chronic conditions
