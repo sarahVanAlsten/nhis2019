@@ -29,6 +29,10 @@ library(survival)
 library(tableone)
 library(tidyverse)
 
+
+# Data Management ---------------------------------------------------------
+
+
 #read in the data
 eligible <- read.csv("data\\eligible.csv")
 
@@ -88,6 +92,9 @@ table(eligible$cvdHtMort, useNA = "ifany")
 #IPUMS constructed a strata var to use to combine years
 #2006 - 2014 is statistically independent from 2000 - 2005; the two need to be pooled
 #separately
+
+# Create Survey Design ----------------------------------------------------
+
 
 #sample adult weights. Need 1 for vars assesed in all years, another
 #for those assessed in 2010-2014 (the more descriptive CRN items)
@@ -175,6 +182,11 @@ cvdht.mort10.fin.sa <- subset(mort10sa.Svy, AnyCVDHT == 1 & finprobsa10 == TRUE)
 #rm(mort14.Svy)
 #rm(samp5.Svy)
 #rm(samp14.Svy)
+
+
+# Make Table One ----------------------------------------------------------
+
+
 ######################################################################################
 #now, get descriptive statistics
 #FIRST, for CRN bx assessed in late years
@@ -263,10 +275,9 @@ table(diab.mort14$variables$DEAD, diab.mort14$variables$CRN, useNA = "ifany")
 ########################################################################################
 #svycoxph and survival to run the regressions
 #crude/unadjusted
-#mod1.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
-#                      design = diab.mort14.fin)
 
-#summary(mod1.diab)
+# Disease Specific --------------------------------------------------------
+
 
 mod1.diab.sa <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
                       design = diab.mort14.fin.sa)
@@ -366,6 +377,8 @@ svyquantile(~fuTime, design = cvdht.mort14.fin.sa, quantiles = .5, na.rm = T)
 svyquantile(~fuTime, design = cvdht.mort14.fin.sa, quantiles = .25, na.rm = T)
 svyquantile(~fuTime, design = cvdht.mort14.fin.sa, quantiles = .75, na.rm = T)
 
+
+# All Cause ---------------------------------------------------------------
 
 ##############################################################################
 #now do all-cause mortality
@@ -500,6 +513,10 @@ median(cvdht.mort14.fin$variables[cvdht.mort14.fin$variables$AnyCVDHT ==1 &
 #####################################################################################
 #Restricting Analysis to 2000 - 2010 years
 #######################################################################################
+
+
+# Early Disease Specific --------------------------------------------------
+
 #svycoxph and survival to run the regressions
 #crude/unadjusted
 
@@ -567,6 +584,8 @@ svyquantile(~fuTime, design = cvdht.mort10.fin.sa, quantiles = .25, na.rm = T)
 svyquantile(~fuTime, design = cvdht.mort10.fin.sa, quantiles = .75, na.rm = T)
 
 
+# Early All Cause ---------------------------------------------------------
+
 ##############################################################################
 #now do all-cause mortality
 #crude/unadjusted
@@ -622,4 +641,9 @@ mod2.early.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~facto
                                 design = cvdht.mort10.fin.sa)
 
 summary(mod2.early.cvdht.allcause)
+################################################################
+
+# For All Cause, adjusting also for chronic conditions --------------------
+
+
 
