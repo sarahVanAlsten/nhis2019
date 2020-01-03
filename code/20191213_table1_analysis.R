@@ -782,19 +782,3 @@ mod1.cvdht.sa.extra.early <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(C
                                   factor(IncomeR) + factor(SEX) + factor(InsType) + factor(SmokeR) + BMI,
                                 design = cvdht.mort10.fin.sa)
 summary(mod1.cvdht.sa.extra.early)
-#########################################################
-#finally go back and make the additional adjustments for the later years
-mod1.diab.sa.extra.late <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN)+ factor(EduR)+ AGE +
-                                       factor(IncomeR) + factor(SEX) + factor(InsType) + factor(SmokeR) + BMI,
-                                     design = diab.mort5.fin.sa)
-summary(mod1.diab.sa.extra.late)
-
-mod1.cvd.sa.extra.late <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN)+ factor(EduR)+ AGE +
-                                      factor(IncomeR) + factor(SEX) + factor(InsType) + factor(SmokeR) + BMI,
-                                    design = cvd.mort5.fin.sa)
-summary(mod1.cvd.sa.extra.late)
-
-mod1.cvdht.sa.extra.late <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN)+ factor(EduR)+ AGE +
-                                        factor(IncomeR) + factor(SEX) + factor(InsType) + factor(SmokeR) + BMI,
-                                      design = cvdht.mort5.fin.sa)
-summary(mod1.cvdht.sa.extra.late)
