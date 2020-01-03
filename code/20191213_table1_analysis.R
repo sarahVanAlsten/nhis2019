@@ -644,6 +644,150 @@ summary(mod2.early.cvdht.allcause)
 ################################################################
 
 # For All Cause, adjusting also for chronic conditions --------------------
+#For diabetes, adjust for CVD, hypertension, cancer
+#For CVD, adjust for diabetes, hypertension, cancer
+#For CVDHT, adjust for diabetes, cancer
+
+#Diabetes
+mod2.diab.othcond <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                              factor(IncomeR) + factor(SEX) + factor(InsType) + factor(CancerEvBin) +
+                              factor(AnyCVDHT),
+                            design = diab.mort14.fin)
+
+summary(mod2.diab.othcond)
+
+#also have here adjusting for smoking and BMI because it's possible someone might ask for that
+#although the DAG showed they don't need to be adjusted for
+mod2.diab.extra <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                       factor(IncomeR) + factor(SEX) + factor(InsType) + factor(CancerEvBin) +
+                         factor(SmokeR) + BMI + factor(AnyCVDHT),
+                     design = diab.mort14.fin)
+
+summary(mod2.diab.extra)
+
+#CVD
+mod2.cvd.othcond <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                factor(IncomeR) + factor(SEX) + factor(InsType) + factor(CancerEvBin)+
+                               factor(DiabetesRec) + factor(HyperTen),
+                              design = cvd.mort14.fin.sa)
+
+summary(mod2.cvd.othcond)
+
+#adjusting for smoking and BMI
+mod2.cvd.extra <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                               factor(IncomeR) + factor(SEX) + factor(InsType) + factor(CancerEvBin)+
+                               factor(DiabetesRec) + factor(HyperTen) + factor(SmokeR)+ BMI,
+                             design = cvd.mort14.fin.sa)
+
+summary(mod2.cvd.extra)
+
+#CVD plus hypertension
+mod2.cvdht.othcond <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                  factor(IncomeR) + factor(SEX) + factor(InsType)+ factor(CancerEvBin)+
+                                 factor(DiabetesRec),
+                                design = cvdht.mort14.fin.sa)
+
+summary(mod2.cvdht.othcond)
+
+mod2.cvdht.extra <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                 factor(IncomeR) + factor(SEX) + factor(InsType)+ factor(CancerEvBin)+
+                                 factor(DiabetesRec) + factor(SmokeR) + BMI,
+                               design = cvdht.mort14.fin.sa)
+
+summary(mod2.cvdht.extra)
+#####################################################################
+#Early years with the additional adjustments for other chronic conditions
+#Diabetes
+mod2.early.diab.othcond <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                       factor(IncomeR) + factor(SEX) + factor(InsType) + factor(CancerEvBin)+
+                                       factor(AnyCVDHT),
+                                     design = diab.mort10.fin.sa)
 
 
+summary(mod2.early.diab.othcond)
 
+mod2.early.diab.extra <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                      factor(IncomeR) + factor(SEX) + factor(InsType) + factor(CancerEvBin)+
+                                      factor(AnyCVDHT) + factor(SmokeR)+ BMI,
+                                    design = diab.mort10.fin.sa)
+
+
+summary(mod2.early.diab.extra)
+
+#CVD
+mod2.early.cvd.othcond <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                      factor(IncomeR) + factor(SEX) + factor(InsType)+ factor(CancerEvBin)+
+                                      factor(DiabetesRec) + factor(HyperTen),
+                                    design = cvd.mort10.fin.sa)
+
+summary(mod2.early.cvd.othcond)
+
+mod2.early.cvd.extra <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                     factor(IncomeR) + factor(SEX) + factor(InsType)+ factor(CancerEvBin)+
+                                     factor(DiabetesRec) + factor(HyperTen) + factor(SmokeR) + BMI,
+                                   design = cvd.mort10.fin.sa)
+
+summary(mod2.early.cvd.extra)
+
+#CVD plus hypertension
+mod2.early.cvdht.othcond <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                        factor(IncomeR) + factor(SEX) + factor(InsType)+ factor(CancerEvBin)+
+                                       factor(DiabetesRec),
+                                      design = cvdht.mort10.fin.sa)
+
+summary(mod2.early.cvdht.othcond)
+
+mod2.early.cvdht.extra <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                       factor(IncomeR) + factor(SEX) + factor(InsType)+ factor(CancerEvBin)+
+                                       factor(DiabetesRec)+ factor(SmokeR) + BMI,
+                                     design = cvdht.mort10.fin.sa)
+
+summary(mod2.early.cvdht.extra)
+#############################################################################
+#Go back and do smoking and BMI adjustment for dz specific
+mod1.diab.sa.extra <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN)+ factor(EduR)+ AGE +
+                                 factor(IncomeR) + factor(SEX) + factor(InsType) + factor(SmokeR) + BMI,
+                         design = diab.mort14.fin.sa)
+summary(mod1.diab.sa.extra)
+
+mod1.cvd.sa.extra <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN)+ factor(EduR)+ AGE +
+                                 factor(IncomeR) + factor(SEX) + factor(InsType) + factor(SmokeR) + BMI,
+                               design = cvd.mort14.fin.sa)
+summary(mod1.cvd.sa.extra)
+
+mod1.cvdht.sa.extra <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN)+ factor(EduR)+ AGE +
+                                factor(IncomeR) + factor(SEX) + factor(InsType) + factor(SmokeR) + BMI,
+                              design = cvdht.mort14.fin.sa)
+summary(mod1.cvdht.sa.extra)
+
+#for the early years
+mod1.diab.sa.extra.early <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN)+ factor(EduR)+ AGE +
+                                 factor(IncomeR) + factor(SEX) + factor(InsType) + factor(SmokeR) + BMI,
+                               design = diab.mort10.fin.sa)
+summary(mod1.diab.sa.extra.early)
+
+mod1.cvd.sa.extra.early <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN)+ factor(EduR)+ AGE +
+                                factor(IncomeR) + factor(SEX) + factor(InsType) + factor(SmokeR) + BMI,
+                              design = cvd.mort10.fin.sa)
+summary(mod1.cvd.sa.extra.early)
+
+mod1.cvdht.sa.extra.early <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN)+ factor(EduR)+ AGE +
+                                  factor(IncomeR) + factor(SEX) + factor(InsType) + factor(SmokeR) + BMI,
+                                design = cvdht.mort10.fin.sa)
+summary(mod1.cvdht.sa.extra.early)
+#########################################################
+#finally go back and make the additional adjustments for the later years
+mod1.diab.sa.extra.late <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN)+ factor(EduR)+ AGE +
+                                       factor(IncomeR) + factor(SEX) + factor(InsType) + factor(SmokeR) + BMI,
+                                     design = diab.mort5.fin.sa)
+summary(mod1.diab.sa.extra.late)
+
+mod1.cvd.sa.extra.late <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN)+ factor(EduR)+ AGE +
+                                      factor(IncomeR) + factor(SEX) + factor(InsType) + factor(SmokeR) + BMI,
+                                    design = cvd.mort5.fin.sa)
+summary(mod1.cvd.sa.extra.late)
+
+mod1.cvdht.sa.extra.late <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN)+ factor(EduR)+ AGE +
+                                        factor(IncomeR) + factor(SEX) + factor(InsType) + factor(SmokeR) + BMI,
+                                      design = cvdht.mort5.fin.sa)
+summary(mod1.cvdht.sa.extra.late)
