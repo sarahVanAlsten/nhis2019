@@ -121,12 +121,15 @@ mort14sa.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight
 mort10sa.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeightSA10,
                         nest = TRUE, data = eligible[eligible$YEAR <2010,])
 
+mort5sa.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeightSA10,
+                          nest = TRUE, data = eligible[eligible$YEAR >=2010,])
 
 #which ones have a finite probability of selection
 finprob <- (is.finite(mort14.Svy$prob))
 finprob10 <- (is.finite(mort10.Svy$prob))
 finprobsa <- (is.finite(mort14sa.Svy$prob))
 finprobsa10 <- (is.finite(mort10sa.Svy$prob))
+finprobsa5 <- (is.finite(mort5sa.Svy$prob))
 prop.table(table(finprob))
 prop.table(table(finprob10))
 prop.table(table(finprobsa))
@@ -173,6 +176,10 @@ cvdht.mort14.fin.sa <- subset(mort14sa.Svy, AnyCVDHT == 1 & finprobsa == TRUE)
 diab.mort10.fin.sa <- subset(mort10sa.Svy, DiabetesRec == 1  & finprobsa10 == TRUE)
 cvd.mort10.fin.sa <- subset(mort10sa.Svy, AnyCVD == 1 & finprobsa10 == TRUE)
 cvdht.mort10.fin.sa <- subset(mort10sa.Svy, AnyCVDHT == 1 & finprobsa10 == TRUE)
+
+diab.mort5.fin.sa <- subset(mort5sa.Svy, DiabetesRec == 1  & finprobsa5 == TRUE)
+cvd.mort5.fin.sa <- subset(mort5sa.Svy, AnyCVD == 1 & finprobsa5 == TRUE)
+cvdht.mort5.fin.sa <- subset(mort5sa.Svy, AnyCVDHT == 1 & finprobsa5 == TRUE)
 
 ###############################################################################
 #clean up environment to help things run faster
