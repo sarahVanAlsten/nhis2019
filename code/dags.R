@@ -92,7 +92,7 @@ dag4 <-dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN + Age + S
 ggdag(dag4, text = T) + theme_dag()
 ggdag_adjustment_set(dag4, text = T, use_labels = F, shadow = TRUE)
 
-
+#
 allCauseDag <- dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN + Age + Sex + Income + Chronic,
                       Smoking ~ Edu + Race + Sex + Income,
                       Insurance ~ Income + Age,
