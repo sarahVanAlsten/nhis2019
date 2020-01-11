@@ -70,7 +70,6 @@ ggdag_adjustment_set(dag, text = FALSE, use_labels = "label", shadow = TRUE)
 ggdag_adjustment_set(dag3, text = TRUE)
 
 dag4 <-dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN + Age + Sex + Income,
-              Smoking ~ Edu,
               Insurance ~ Income + Age,
               CRN ~ Income + Age + Sex + Insurance + Edu,
               BMI ~ Race + Income + Edu + Smoking + Sex,
@@ -90,7 +89,27 @@ dag4 <-dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN + Age + S
               exposure = "CRN",
               outcome = "Mortality") 
 ggdag(dag4, text = T) + theme_dag()
-ggdag_adjustment_set(dag4, text = T, use_labels = F, shadow = TRUE)
+
+# test <- adjust_for(dag4,var = c("Age", "Sex", "Income", "Insurance", "Edu", "CRN"))
+# test.data <- test$data
+# 
+# colliders <- node_collider(dag4)
+# collider.data <- colliders$data
+ggdag_adjustment_set(dag4, text = T, use_labels = F, shadow = TRUE) + theme_dag()
+
+coords <- list(
+        x = c(Mortality = 7, CRN = 5, Sex = 3, Race = 3, Insurance = 4.5,
+              Income = 4.5, BMI = 5, Edu = 2, Smoking = 1, Age = 7),
+        y = c(Mortality = 5, CRN = 5, Sex = 6, Race = 3, Insurance = 7,
+              Income = 3, BMI = 1, Edu = 1, Smoking = 4, Age =  2)
+        )
+
+#put into data frame
+coord_df <- coords2df(coords)
+coords2list(coord_df)
+
+coordinates(dag4) <- coords2list(coord_df)
+ggdag(dag4, text = T, use_labels = T) + theme_dag()
 
 #
 allCauseDag <- dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN + Age + Sex + Income + Chronic,
