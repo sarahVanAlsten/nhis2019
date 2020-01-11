@@ -70,7 +70,7 @@ ggdag_adjustment_set(dag, text = FALSE, use_labels = "label", shadow = TRUE)
 ggdag_adjustment_set(dag3, text = TRUE)
 
 dag4 <-dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN + Age + Sex + Income,
-              Insurance ~ Income + Age,
+              Insurance ~ Income + Age + Edu,
               CRN ~ Income + Age + Sex + Insurance + Edu,
               BMI ~ Race + Income + Edu + Smoking + Sex,
               Income ~ Race + Edu + Sex + Age,
@@ -95,7 +95,6 @@ ggdag(dag4, text = T) + theme_dag()
 # 
 # colliders <- node_collider(dag4)
 # collider.data <- colliders$data
-ggdag_adjustment_set(dag4, text = T, use_labels = F, shadow = TRUE) + theme_dag()
 
 coords <- list(
         x = c(Mortality = 7, CRN = 5, Sex = 3, Race = 3, Insurance = 4.5,
@@ -109,7 +108,8 @@ coord_df <- coords2df(coords)
 coords2list(coord_df)
 
 coordinates(dag4) <- coords2list(coord_df)
-ggdag(dag4, text = T, use_labels = T) + theme_dag()
+ggdag(dag4, text = T, text_size = 2.5) + theme_dag()
+ggdag_adjustment_set(dag4, text = T, shadow = TRUE, text_col = "black") + theme_dag()
 
 #
 allCauseDag <- dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN + Age + Sex + Income + Chronic,
