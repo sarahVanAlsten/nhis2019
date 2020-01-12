@@ -416,7 +416,7 @@ result.data <- rbind(result.data, addResult(mod1.cvdht.sa.l, "2010 - 2014", "cvd
 mod2.diab.sa.l <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN)+ factor(EduR)+ AGE +
                                    factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
                                  design = diab.mort5.fin.sa)
-summary(mod1.diab.sa.extra.l)
+summary(mod2.diab.sa.l)
 result.data <- rbind(result.data, addResult(mod2.diab.sa.l, "2010 - 2014", "diabetes", "adjusted", "dz specific"))
 
 ########################################################################
@@ -435,3 +435,49 @@ result.data <- rbind(result.data, addResult(mod2.cvdht.sa.l, "2010 - 2014", "cvd
 
 ######################################################################################
 #for later years with all cause models
+#the unadjusted models
+mod1.diab.sa.l.ac <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                           design = diab.mort5.fin.sa)
+summary(mod1.diab.sa.l.ac)
+
+result.data <- rbind(result.data, addResult(mod1.diab.sa.l.ac, "2010 - 2014", "diabetes", "unadjusted", "allcause"))
+
+############################################################################
+mod1.cvd.sa.l.ac <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                          design = cvd.mort5.fin.sa)
+summary(mod1.cvd.sa.l.ac)
+result.data <- rbind(result.data, addResult(mod1.cvd.sa.l.ac, "2010 - 2014", "cvd", "unadjusted", "allcause"))
+
+#############################################################
+mod1.cvdht.sa.l.ac <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                            design = cvdht.mort5.fin.sa)
+summary(mod1.cvdht.sa.l.ac)
+result.data <- rbind(result.data, addResult(mod1.cvdht.sa.l.ac, "2010 - 2014", "cvdht", "unadjusted", "allcause"))
+
+#############################################################
+#adjusted model
+
+mod2.diab.sa.l.ac <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)+ factor(EduR)+ AGE +
+                             factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+                             factor(CancerEvBin) + factor(AnyCVDHT),
+                           design = diab.mort5.fin.sa)
+summary(mod2.diab.sa.l.ac)
+result.data <- rbind(result.data, addResult(mod2.diab.sa.l.ac, "2010 - 2014", "diabetes", "adjusted", "allcause"))
+
+########################################################################
+mod2.cvd.sa.l.ac <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)+ factor(EduR)+ AGE +
+                            factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+                            factor(DiabetesRec) + factor(CancerEvBin) + factor(HyperTen),
+                          design = cvd.mort5.fin.sa)
+summary(mod2.cvd.sa.l.ac)
+result.data <- rbind(result.data, addResult(mod2.cvd.sa.l.ac, "2010 - 2014", "cvd", "adjusted", "allcause"))
+#########################################################################
+
+mod2.cvdht.sa.l.ac <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)+ factor(EduR)+ AGE +
+                              factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR)+
+                                factor(DiabetesRec) + factor(CancerEvBin),
+                            design = cvdht.mort5.fin.sa)
+summary(mod2.cvdht.sa.l.ac)
+result.data <- rbind(result.data, addResult(mod2.cvdht.sa.l.ac, "2010 - 2014", "cvdht", "adjusted", "allcause"))
+
+######################################################################################
