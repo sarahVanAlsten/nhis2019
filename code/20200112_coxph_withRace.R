@@ -252,8 +252,8 @@ mod1.early.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
 
 summary(mod1.early.diab)
 #to get N(%)
-diab_mort_n.2 <- mod1.early.diab$nevent
-diab_mort_perc.2 <- mod1.early.diab$nevent / mod1.early.diab$n
+mod1.early.diab$nevent
+mod1.early.diab$nevent / mod1.early.diab$n
 result.data <- rbind(result.data, addResult(mod1.early.diab, "2000 - 2010", "diabetes", "unadjusted", "dz specific"))
 
 ###################################################################################
@@ -262,8 +262,8 @@ mod1.early.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN),
 
 summary(mod1.early.cvd)
 #to get N(%)
-cvd_mort_n.2 <- mod1.early.cvd$nevent
-cvd_mort_perc.2 <- mod1.early.cvd$nevent / mod1.early.cvd$n
+mod1.early.cvd$nevent
+mod1.early.cvd$nevent / mod1.early.cvd$n
 result.data <- rbind(result.data, addResult(mod1.early.cvd, "2000 - 2010", "cvd", "unadjusted", "dz specific"))
 
 #################################################################################
@@ -272,8 +272,8 @@ mod1.early.cvdht <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN),
 
 summary(mod1.early.cvdht)
 #to get N(%)
-cvdht_mort_n.2 <- mod1.early.cvdht$nevent
-cvdht_mort_perc.2 <- mod1.early.cvdht$nevent / mod1.early.cvdht$n
+mod1.early.cvdht$nevent
+mod1.early.cvdht$nevent / mod1.early.cvdht$n
 result.data <- rbind(result.data, addResult(mod1.early.cvdht, "2000 - 2010", "cvdht", "unadjusted", "dz specific"))
 
 ###################################################################################
@@ -329,8 +329,8 @@ mod1.early.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor
 
 summary(mod1.early.diab.allcause)
 #to get N(%)
-diabAC_mort_n.2 <- mod1.early.diab.allcause$nevent
-diabAC_mort_perc.2 <- mod1.early.diab.allcause$nevent / mod1.early.diab.allcause$n
+mod1.early.diab.allcause$nevent
+mod1.early.diab.allcause$nevent / mod1.early.diab.allcause$n
 result.data <- rbind(result.data, addResult(mod1.early.diab.allcause, "2000 - 2010", "diabetes", "unadjusted", "allcause"))
 ####################################################################
 
@@ -339,8 +339,8 @@ mod1.early.cvd.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(
 
 summary(mod1.early.cvd.allcause)
 #to get N(%)
-cvdAC_mort_n.2 <- mod1.early.cvd.allcause$nevent
-cvdAC_mort_perc.2 <- mod1.early.cvd.allcause$nevent / mod1.early.cvd.allcause$n
+mod1.early.cvd.allcause$nevent
+mod1.early.cvd.allcause$nevent / mod1.early.cvd.allcause$n
 result.data <- rbind(result.data, addResult(mod1.early.cvd.allcause, "2000 - 2010", "cvd", "unadjusted", "allcause"))
 ##########################################################################################
 
@@ -349,8 +349,8 @@ mod1.early.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~facto
 
 summary(mod1.early.cvdht.allcause)
 #to get N(%)
-cvdhtAC_mort_n.2 <- mod1.early.cvdht.allcause$nevent
-cvdhtAC_mort_perc.2 <- mod1.early.cvdht.allcause$nevent / mod1.early.cvdht.allcause$n
+mod1.early.cvdht.allcause$nevent
+mod1.early.cvdht.allcause$nevent / mod1.early.cvdht.allcause$n
 result.data <- rbind(result.data, addResult(mod1.early.cvdht.allcause, "2000 - 2010", "cvdht", "unadjusted", "allcause"))
 
 ###################################################################################
@@ -398,17 +398,26 @@ summary(mod1.diab.sa.l)
 
 result.data <- rbind(result.data, addResult(mod1.diab.sa.l, "2010 - 2014", "diabetes", "unadjusted", "dz specific"))
 
+mod1.diab.sa.l$n
+mod1.diab.sa.l$nevent/ mod1.diab.sa.l$n
+
 ############################################################################
 mod1.cvd.sa.l <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN),
                            design = cvd.mort5.fin.sa)
 summary(mod1.cvd.sa.l)
 result.data <- rbind(result.data, addResult(mod1.cvd.sa.l, "2010 - 2014", "cvd", "unadjusted", "dz specific"))
 
+mod1.cvd.sa.l$n
+mod1.cvd.sa.l$nevent/ mod1.cvd.sa.l$n
+
 #############################################################
 mod1.cvdht.sa.l <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN),
                           design = cvdht.mort5.fin.sa)
 summary(mod1.cvdht.sa.l)
 result.data <- rbind(result.data, addResult(mod1.cvdht.sa.l, "2010 - 2014", "cvdht", "unadjusted", "dz specific"))
+
+mod1.cvdht.sa.l$n
+mod1.cvdht.sa.l$nevent/ mod1.cvdht.sa.l$n
 
 #############################################################
 #adjusted model
@@ -442,17 +451,27 @@ summary(mod1.diab.sa.l.ac)
 
 result.data <- rbind(result.data, addResult(mod1.diab.sa.l.ac, "2010 - 2014", "diabetes", "unadjusted", "allcause"))
 
+mod1.diab.sa.l.ac$nevent
+mod1.diab.sa.l.ac$nevent/ mod1.diab.sa.l.ac$n
+
 ############################################################################
 mod1.cvd.sa.l.ac <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
                           design = cvd.mort5.fin.sa)
 summary(mod1.cvd.sa.l.ac)
 result.data <- rbind(result.data, addResult(mod1.cvd.sa.l.ac, "2010 - 2014", "cvd", "unadjusted", "allcause"))
 
+mod1.cvd.sa.l.ac$nevent
+mod1.cvd.sa.l.ac$nevent/ mod1.cvd.sa.l.ac$n
+
+
 #############################################################
 mod1.cvdht.sa.l.ac <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
                             design = cvdht.mort5.fin.sa)
 summary(mod1.cvdht.sa.l.ac)
 result.data <- rbind(result.data, addResult(mod1.cvdht.sa.l.ac, "2010 - 2014", "cvdht", "unadjusted", "allcause"))
+
+mod1.cvdht.sa.l.ac$nevent
+mod1.cvdht.sa.l.ac$nevent/ mod1.cvdht.sa.l.ac$n
 
 #############################################################
 #adjusted model
@@ -481,3 +500,44 @@ summary(mod2.cvdht.sa.l.ac)
 result.data <- rbind(result.data, addResult(mod2.cvdht.sa.l.ac, "2010 - 2014", "cvdht", "adjusted", "allcause"))
 
 ######################################################################################
+result.data[17, "model"] <- "adjusted"
+result.data[18, "model"] <- "adjusted"
+
+all.adj.dz <- result.data %>%
+  filter(years == "2000 - 2014" & model == "adjusted" & outcome == "dz specific")
+
+all.adj.ac <- result.data %>%
+  filter(years == "2000 - 2014" & model == "adjusted" & outcome == "allcause")
+
+early.adj.dz <- result.data %>%
+  filter(years == "2000 - 2009" & model == "adjusted" & outcome == "dz specific")
+
+early.adj.ac <- result.data %>%
+  filter(years == "2000 - 2009" & model == "adjusted" & outcome == "allcause")
+
+late.adj.dz <- result.data %>%
+  filter(years == "2010 - 2014" & model == "adjusted" & outcome == "dz specific")
+
+late.adj.ac <- result.data %>%
+  filter(years == "2010 - 2014" & model == "adjusted" & outcome == "allcause")
+
+#function that will print out the HRs with 95% CI in parentheses
+myPrintFx <- function(data){
+  for (i in 1:nrow(data)){
+    est <- as.numeric(data[i, "est"])
+    lower <- as.numeric(data[i, "lower"])
+    upper <- as.numeric(data[i, "upper"])
+    print(paste(sprintf(fmt = "%.4f", est), " (",
+                sprintf(fmt = "%.4f", lower), " - ",
+                sprintf(fmt = "%.4f", upper), ")", sep = ""))
+  }
+}
+
+myPrintFx(all.adj.dz)
+myPrintFx(all.adj.ac)
+myPrintFx(early.adj.dz)
+myPrintFx(early.adj.ac)
+myPrintFx(late.adj.dz)
+myPrintFx(late.adj.ac)
+
+
