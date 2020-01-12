@@ -71,7 +71,7 @@ ggdag_adjustment_set(dag3, text = TRUE)
 
 dag4 <-dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN + Age + Sex + Income,
               Insurance ~ Income + Age + Edu,
-              CRN ~ Income + Age + Sex + Insurance + Edu,
+              CRN ~ Income + Age + Sex + Insurance + Edu + Race,
               BMI ~ Race + Income + Edu + Smoking + Sex,
               Income ~ Race + Edu + Sex + Age,
               Edu ~ Race,
@@ -113,27 +113,39 @@ ggdag_adjustment_set(dag4, text = T, shadow = TRUE, text_col = "black") + theme_
 
 #
 allCauseDag <- dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN + Age + Sex + Income + Chronic,
-                      Smoking ~ Edu + Race + Sex + Income,
-                      Insurance ~ Income + Age,
-                      CRN ~ Income + Age + Sex + Insurance + Edu + Chronic,
+                      Insurance ~ Income + Age + Edu,
+                      CRN ~ Income + Age + Sex + Insurance + Edu + Race + Chronic,
                       BMI ~ Race + Income + Edu + Smoking + Sex,
                       Income ~ Race + Edu + Sex + Age,
                       Edu ~ Race,
-                      Chronic ~ Income + Race + Smoking + Edu + Age,
+                      Smoking ~ Edu + Race + Sex + Income,
+                      Chronic ~ Age + Race + Smoking + Income + Edu + BMI + Sex,
                       labels = c("CRN" = "CRN", 
                                  "Smoking" = "Smoking",
                                  "Insurance" = "Insurance",
                                  "BMI" = "BMI", 
                                  "Income" = "Income",
-                                 "Mortality" = "AC Mortality",
+                                 "Mortality" = "All Cause Mortality",
                                  "Race"= "Race",
                                  "Age"= "Age",
                                  "Sex"= "Sex",
                                  "Edu" = "Education",
-                                 "Chronic" = "Chronic"),
+                                 "Chronic" = "Chronic Conditions"),
                       exposure = "CRN",
-                      outcome = "Mortality")
+                      outcome = "Mortality") 
 
+
+coordsAC <- list(
+        x = c(Mortality = 7, CRN = 5, Sex = 3, Race = 3, Insurance = 4.5,
+              Income = 4.5, BMI = 5, Edu = 2, Smoking = 1, Age = 7, Chronic = 8),
+        y = c(Mortality = 5, CRN = 5, Sex = 6, Race = 3, Insurance = 7,
+              Income = 3.4, BMI = 1, Edu = 1, Smoking = 4, Age =  2, Chronic = 3)
+)
+
+#put into data frame
+coord_df_AC <- coords2df(coordsAC)
+
+coordinates(allCauseDag) <- coords2list(coord_df_AC)
 ggdag(allCauseDag, text = T) + theme_dag()
-ggdag_adjustment_set(allCauseDag, text = T, use_labels = F, shadow = TRUE)
+ggdag_adjustment_set(allCauseDag, text = T, shadow = TRUE, text_col = "black") + theme_dag()
 #same adjustments as earlier PLUS chronic conditions
