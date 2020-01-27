@@ -29,6 +29,12 @@ library(survival)
 library(tableone)
 library(tidyverse)
 
+crnSum <- eligible %>%
+  mutate(crnSum = lessMed + skipMed + delayMed + BarrierMedR) %>%
+  summarise(sum(crnSum ==1, na.rm = T),
+            sum(crnSum ==2, na.rm = T),
+            sum(crnSum ==3, na.rm = T),
+            sum(crnSum ==4, na.rm = T))
 
 # Data Management ---------------------------------------------------------
 
