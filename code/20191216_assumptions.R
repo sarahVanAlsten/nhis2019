@@ -5,7 +5,46 @@
 #Packages used: survey, survminer, survival
 #Last Update: Dec 20, 2019
 ################################################################################
+diab.strat <- coxph(formula = Surv(fuTime, diabMort)~factor(CRN)*factor(yearStrat) ,
+                    data = diab.mort14.fin.sa$variables)
+summary(diab.strat)
 
+diab.strat <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN)*factor(yearStrat) + factor(EduR)+ AGE +
+                         factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) ,
+                                              design = diab.mort14.fin.sa)
+summary(diab.strat)
+
+
+diab.strat <- coxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)*factor(yearStrat) ,
+                    data = diab.mort14.fin.sa$variables)
+summary(diab.strat)
+
+diab.strat <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)*factor(yearStrat) + factor(EduR)+ AGE +
+                         factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + factor(CancerEvBin)+
+                         factor(AnyCVDHT),
+                       design = diab.mort14.fin.sa)
+summary(diab.strat)
+
+
+cvd.strat <- coxph(formula = Surv(fuTime, cvdMort)~factor(CRN)*factor(yearStrat) ,
+                    data = cvd.mort14.fin.sa$variables)
+summary(cvd.strat)
+
+cvd.strat <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN)*factor(yearStrat) + factor(EduR)+ AGE +
+                         factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) ,
+                       design = cvd.mort14.fin.sa)
+summary(cvd.strat)
+
+
+cvd.strat <- coxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)*factor(yearStrat) ,
+                   data = cvd.mort14.fin.sa$variables)
+summary(cvd.strat)
+
+cvd.strat <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)*factor(yearStrat) + factor(EduR)+ AGE +
+                        factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + factor(CancerEvBin)+
+                        factor(DiabetesRec)+ factor(HyperTen),
+                      design = cvd.mort14.fin.sa)
+summary(cvd.strat)
 #############################################################
 #now check the assumptions
 #first: the proportional hazards assumption
