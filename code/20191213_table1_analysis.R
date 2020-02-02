@@ -29,12 +29,6 @@ library(survival)
 library(tableone)
 library(tidyverse)
 
-crnSum <- eligible %>%
-  mutate(crnSum = lessMed + skipMed + delayMed + BarrierMedR) %>%
-  summarise(sum(crnSum ==1, na.rm = T),
-            sum(crnSum ==2, na.rm = T),
-            sum(crnSum ==3, na.rm = T),
-            sum(crnSum ==4, na.rm = T))
 
 # Data Management ---------------------------------------------------------
 
@@ -50,6 +44,14 @@ eligible <- eligible %>%
          
 
 table(eligible$CRN, eligible$ASTATFLG, useNA = "ifany")
+
+#sum of crn bx
+crnSum <- eligible %>%
+  mutate(crnSum = lessMed + skipMed + delayMed + BarrierMedR) %>%
+  summarise(sum(crnSum ==1, na.rm = T),
+            sum(crnSum ==2, na.rm = T),
+            sum(crnSum ==3, na.rm = T),
+            sum(crnSum ==4, na.rm = T))
 
 #the reason it's 15 and 11 is because 2000-2014 is actually 15 total cycles,
 #and 2000-2010 is 11 cycles!
@@ -130,7 +132,7 @@ mort10sa.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight
 mort5sa.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeightSA10,
                           nest = TRUE, data = eligible[eligible$YEAR >=2010,])
 
-#which ones have a finite probability of selection
+#only keep the sample adults
 finprob <- (is.finite(mort14.Svy$prob))
 finprob10 <- (is.finite(mort10.Svy$prob))
 finprobsa <- (is.finite(mort14sa.Svy$prob))

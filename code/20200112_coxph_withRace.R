@@ -73,6 +73,7 @@ mod1.cvdht.sa <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN),
                           design = cvdht.mort14.fin.sa)
 
 summary(mod1.cvdht.sa)
+
 result.data <- rbind(result.data, addResult(mod1.cvdht.sa, "2000 - 2014", "cvdht", "unadjusted", "dz specific"))
 
 #to get N(%)
@@ -104,7 +105,7 @@ result.data <- rbind(result.data, addResult(mod2.cvd.sa, "2000 - 2014", "cvd", "
 ###############################################################################
 #CVD plus hypertension
 mod2.cvdht.sa <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
-                            factor(IncomeR) + factor(SEX) + factor(InsType),
+                            factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
                           design = cvdht.mort14.fin.sa)
 
 summary(mod2.cvdht.sa)
@@ -158,6 +159,9 @@ summary(mod1.cvdht.allcause)
 cvdhtAC_mort_n <- mod1.cvdht.allcause$nevent
 cvdhtAC_mort_perc <- mod1.cvdht.allcause$nevent / mod1.cvdht.allcause$n
 
+summary(mod1.cvdht.sa)
+
+
 result.data <- rbind(result.data, addResult(mod1.cvdht.allcause, "2000 - 2014", "cvdht", "unadjusted", "allcause"))
 ##############################################################################
 
@@ -184,6 +188,11 @@ result.data <- rbind(result.data, addResult(mod2.cvd.allcause, "2000 - 2014", "c
 
 #CVD plus hypertension
 mod2.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                  factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+                                  factor(DiabetesRec) + factor(CancerEvBin),
+                                design = cvdht.mort14.fin.sa)
+
+mod2.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)*factor(ifelse(YEAR <= 2010,1,2))+ factor(EduR)+ AGE +
                                   factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
                                   factor(DiabetesRec) + factor(CancerEvBin),
                                 design = cvdht.mort14.fin.sa)

@@ -1,10 +1,11 @@
 ##################################################################
 #Sarah Van Alsten
 #Created: Dec 16, 2019
-#check assumptions of coxph
+#check assumptions of coxph : proportional hazards
 #Packages used: survey, survminer, survival
-#Last Update: Dec 20, 2019
+#Last Update: Feb 1, 2019
 ################################################################################
+library(survminer)
 diab.strat <- coxph(formula = Surv(fuTime, diabMort)~factor(CRN)*factor(yearStrat) ,
                     data = diab.mort14.fin.sa$variables)
 summary(diab.strat)
@@ -90,6 +91,7 @@ zph.cvdht1.ace <- cox.zph(mod1.early.cvdht.allcause)
 zph.cvdht2.ace <- cox.zph(mod2.early.cvdht.allcause)
 
 #put them all into a table to make easier to see
+#CRN proportionality only
 crn.zph.frame <- data.frame(dzSpec = c(zph.diab1$table[1,3], zph.diab2$table[1,3], zph.cvd1$table[1,3], zph.cvd2$table[1,3], zph.cvdht1$table[1,3], zph.cvdht2$table[1,3]),
                         allCause = c(zph.diab1.ac$table[1,3], zph.diab2.ac$table[1,3], zph.cvd1.ac$table[1,3], zph.cvd2.ac$table[1,3], zph.cvdht1.ac$table[1,3], zph.cvdht2.ac$table[1,3]),
                         dzSpecEarly = c(zph.diab1e$table[1,3], zph.diab2e$table[1,3], zph.cvd1e$table[1,3], zph.cvd2e$table[1,3], zph.cvdht1e$table[1,3], zph.cvdht2e$table[1,3]),
@@ -98,6 +100,7 @@ crn.zph.frame <- data.frame(dzSpec = c(zph.diab1$table[1,3], zph.diab2$table[1,3
                         condition = c("Diab", "Diab", "CVD", "CVD", "CVDHT", "CVDHT"))
 #in adjusted models, the PH assumption is met for the CRN variable, though not usually in unadjusted models
 
+#global prop haz for adjusted models
 global.zph.frame <- data.frame(dzSpec = c(zph.diab2$table[nrow(zph.diab2$table),3],
                                           zph.cvd2$table[nrow(zph.cvd2$table),3],
                                           zph.cvdht2$table[nrow(zph.cvdht2$table),3]),
@@ -136,31 +139,31 @@ violatedPH <- lapply(zphList, FUN = getPHViolation)
 
 #look at the schoedenfeld resid for vars in violation
 #####################################################################
-ggcoxzph(zph.diab2, var = "AGE") #no clear inflection pt
-ggcoxzph(zph.diab2, var = "factor(SEX)2") #inflection around 190 wks
-ggcoxzph(zph.diab2, var = "factor(IncomeR)4") #doesn't visually look bad... outliers really
-ggcoxzph(zph.diab2, var = "factor(IncomeR)5") #same - doesn't look bad just outliers
+ggcoxzph(zph.diab2, var = "AGE", caption = "Age in DM Model") #no clear inflection pt
+ggcoxzph(zph.diab2, var = "factor(SEX)2", caption = "Sex in DM Model") #inflection around 190 wks
+ggcoxzph(zph.diab2, var = "factor(IncomeR)4", caption= "Income Cat 4 in DM Model") #doesn't visually look bad... outliers really
+ggcoxzph(zph.diab2, var = "factor(IncomeR)5", caption = "Income Cat 5 in DM Model") #same - doesn't look bad just outliers
 
-ggcoxzph(zph.cvd2, var = "AGE") #no clear inflection pt
-ggcoxzph(zph.cvd2, var = "factor(CRN)1") #seems to be slightly increasing
-ggcoxzph(zph.cvd2, var = "factor(SEX)2") #kind of u shaped
-ggcoxzph(zph.cvd2, var = "factor(IncomeR)5") #same - doesn't look bad just outliers
-ggcoxzph(zph.cvd2, var = "factor(InsType)3") #3 strata
+ggcoxzph(zph.cvd2, var = "AGE", caption = "Age in CVD") #no clear inflection pt
+ggcoxzph(zph.cvd2, var = "factor(CRN)1", caption = "CRN in CVD") #seems to be slightly increasing
+ggcoxzph(zph.cvd2, var = "factor(SEX)2", caption = "Sex in CVD") #kind of u shaped
+ggcoxzph(zph.cvd2, var = "factor(IncomeR)5", caption = "Income Cat 5 in CVD") #same - doesn't look bad just outliers
+ggcoxzph(zph.cvd2, var = "factor(InsType)3", caption = "Insurance 3 in CVD") #3 strata
 
-ggcoxzph(zph.cvdht2, var = "AGE") #no clear inflection pt
-ggcoxzph(zph.cvdht2, var = "factor(EduR)2") #seems to be slightly increasing
-ggcoxzph(zph.cvdht2, var = "factor(SEX)2") #inflection around 190 wks
-ggcoxzph(zph.cvdht2, var = "factor(IncomeR)5") #same - doesn't look bad just outliers
-ggcoxzph(zph.cvdht2, var = "factor(IncomeR)4") #not bad just outliers
+ggcoxzph(zph.cvdht2, var = "AGE", caption = "Age in CVDHT") #no clear inflection pt
+ggcoxzph(zph.cvdht2, var = "factor(EduR)2", caption = "Edu2 in CVDHT") #seems to be slightly increasing
+ggcoxzph(zph.cvdht2, var = "factor(SEX)2", caption = "Sex cvdht") #inflection around 190 wks
+ggcoxzph(zph.cvdht2, var = "factor(IncomeR)5", caption = "income5 cvdht") #same - doesn't look bad just outliers
+ggcoxzph(zph.cvdht2, var = "factor(IncomeR)4", caption = "income 4 cvdht") #not bad just outliers
 #################################################################################
-ggcoxzph(zph.diab2.ac, var = "AGE") #no clear inflection pt
-ggcoxzph(zph.diab2.ac, var = "factor(InsType)1") #slight downward slope
-ggcoxzph(zph.diab2.ac, var = "factor(InsType)2") #fairly flat
-ggcoxzph(zph.diab2.ac, var = "factor(InsType)4") #faily flat
-ggcoxzph(zph.diab2.ac, var = "factor(SEX)2") #increasing
-ggcoxzph(zph.diab2.ac, var = "factor(IncomeR)1") #doesn't look bad just outliers
-ggcoxzph(zph.diab2.ac, var = "factor(IncomeR)2") #slight increase
-ggcoxzph(zph.diab2.ac, var = "factor(IncomeR)4") #not bad just outliers
+ggcoxzph(zph.diab2.ac, var = "AGE", caption = "Age DM ac") #no clear inflection pt
+ggcoxzph(zph.diab2.ac, var = "factor(InsType)1", caption = "ins1 DM ac") #slight downward slope
+ggcoxzph(zph.diab2.ac, var = "factor(InsType)2", caption = "ins2 DM ac") #fairly flat
+ggcoxzph(zph.diab2.ac, var = "factor(InsType)4",  caption = "ins4 DM ac") #faily flat
+ggcoxzph(zph.diab2.ac, var = "factor(SEX)2", caption = "sex DM ac") #increasing a bit
+ggcoxzph(zph.diab2.ac, var = "factor(IncomeR)1", caption = "inc1 DM ac") #doesn't look bad just outliers
+ggcoxzph(zph.diab2.ac, var = "factor(IncomeR)2", caption = "inc2 DM ac") #slight increase
+ggcoxzph(zph.diab2.ac, var = "factor(IncomeR)4", caption = "inc4 DM ac") #not bad just outliers
 
 ggcoxzph(zph.cvd2.ac, var = "AGE") #not bad
 ggcoxzph(zph.cvd2.ac, var = "factor(SEX)2") #not bad
@@ -209,125 +212,3 @@ ggcoxzph(zph.cvdht2.ace, var = "factor(IncomeR)2") #dip til 300, though small
 ggcoxzph(zph.cvdht2.ace, var = "factor(IncomeR)4") #fairly flat
 ggcoxzph(zph.cvdht2.ace, var = "factor(IncomeR)5") #fairly flat
 
-# Influential Observations ------------------------------------------------
-library(survminer)
-#influence: standardized dfbeta
-mod1.diab.sdfbeta <- resid(mod1.diab, type = "dfbetas")
-plot(mod1.diab.sdfbeta)
-infcase1 <- diab.mort14.fin.sa$variables[mod1.diab.sdfbeta > 0.06,]
-#would exclude these cases by SERIAL identifier... however, there doesn't
-#seem to be anything unusual about them. I'd leave them in.
-table(infcase1$diabMort)
-table(infcase1$SEX)
-median(infcase1$fuTime)
-table(infcase1$YEAR)
-table(infcase1$CRN)
-
-#now look at the deviance residuals
-mod1.diab.dev <- resid(mod1.diab, type = "deviance")
-plot(mod1.diab.dev) #supposed to be symmetric around 0, and definetely wider at top than below
-
-#finally look at delta beta (the not standardized dfbeta)
-mod1.diab.dfbeta <- resid(mod1.diab, type = "dfbeta")
-plot(mod1.diab.dfbeta)
-
-#see if they are patterned by death status
-index <- 1:nrow(diab.mort14.fin.sa$variables)
-dataTest <- as.data.frame(cbind(mod1.diab.dfbeta, diab.mort14.fin.sa$variables$diabMort, index,
-                                diab.mort14.fin.sa$variables$CRN))
-
-#for mortality- no clear separation
-ggplot(dataTest, aes(y = mod1.diab.dfbeta, x= index, color = V2))+ geom_point()
-#for CRN - again, doesn't seem to be clear pattern
-ggplot(dataTest, aes(y = mod1.diab.dfbeta, x= index, color = V4))+ geom_point()
-
-#examining these possibly influential cases there doesn't seem to be any particular reason for their high 
-#influence... some have CRN, some don't. Some died, some did not. Can try excluding them and see if it makes
-#a difference, however in general I'd opt for keeping them- at least until looking at the adjusted model
-mod2.diab.sdfbeta <- resid(mod2.diab, type = "dfbetas")
-
-for (i in 1:ncol(mod2.diab.sdfbeta)){
-  plot(mod2.diab.sdfbeta[,i], ylab = names(mod2.diab$coefficients)[i])
-}
-
-#for instype5 : greater than .095
-#for instype4: less than -0.18
-#for instype3: > 0.2 and < -.15
-#for instype2: < -.2
-#for instype1: < -.2
-#for sex: > .075
-#for incomeR5: > 0.4
-#for incomeR4: > .05
-#for incomeR3: nothing too far out
-#for incomeR2: > 0.15
-#for incomeR1 nothing too far out
-#for AGE: < -.15
-#EDUR3 : > .2
-#EDUR2: no huge jumps, potentially the lowest one
-#CRN: > .14 and the <-.08
-
-#get the sum for each individual case of how many overly influential pieces it has
-mod2.diab.sdfbeta <- as.data.frame(mod2.diab.sdfbeta) %>%
-  mutate(sumInf = (V1 > .14 | V1 < -.08) + (V2 == min(V2, na.rm = T)) + (V3 > .2) + (V4 < -.15) +
-           (V6 > .15) + (V8 > .05) + (V9 > 0.4) + (V10 > 0.075) + (V11 < -.2) + (V12 < -.2) +
-           (V13 > 0.2 | V13 < -.15) + (V14 < -.18) + (V15 > 0.095))
-  
-table(mod2.diab.sdfbeta$sumInf)
-#at most, 46 influential points (42 = 1, 2 = 2, 1 = 5, 1 = 6)
-mod2.diab.sdfbeta$SEQN <- diab.mort14.fin.sa$variables[!is.na(diab.mort14.fin.sa$variables$CRN) & 
-                                                         !is.na(diab.mort14.fin.sa$variables$EduR) & 
-                                                         !is.na(diab.mort14.fin.sa$variables$AGE)&
-                                                        !is.na(diab.mort14.fin.sa$variables$IncomeR) & 
-                                                         !is.na(diab.mort14.fin.sa$variables$SEX) &
-                                                         !is.na(diab.mort14.fin.sa$variables$InsType), "SEQN"]
-
-mod2.diab.sdfbeta[mod2.diab.sdfbeta$sumInf > 1, "SEQN"]
-#####################################################
-
-#also need to test for linearity btwn log hazard and continuous predictors
-#the graphical evaluation is very slow. Get another way.
-martingale.diab <- residuals(mod1.diab, type = "martingale")
-summary(martingale.diab)
-
-#plot predictions vs residuals
-dresids <- residuals(mod1.diab, type="deviance" )
-lp <- predict(mod1.diab, type="lp" )
-plot(lp, dresids, xlab="Linear Predictor", ylab="Deviance Residual")
-
-#dfbetas
-dfbeta <- residuals(mod1.diab, type="dfbeta")
-summary(dfbeta)
-
-plot(1:length(dfbeta), dfbeta) # doesn't look like any big jumps
-plot(1:length(martingale.diab), martingale.diab)
-
-################################
-#Assess Model Fit:
-extractAIC(mod1.diab)
-
-dfbetas <- residuals(fitCPH, type="dfbetas")
-
-par(mfrow=c(2, 2), cex.main=1.4, cex.lab=1.4)
-plot(dfbetas[ , 1], type="h", main="DfBETAS for X",    ylab="DfBETAS", lwd=2)
-plot(dfbetas[ , 2], type="h", main="DfBETAS for IV-B", ylab="DfBETAS", lwd=2)
-plot(dfbetas[ , 3], type="h", main="DfBETAS for IV-C", ylab="DfBETAS", lwd=2)
-
-#linearity of log hazard
-resMart <- residuals(fitCPH, type="martingale")
-plot(dfSurv$X, resMart, main="Martingale-residuals for X",
-     xlab="X", ylab="Residuen", pch=20)
-lines(loess.smooth(dfSurv$X, resMart), lwd=2, col="blue")
-legend(x="bottomleft", col="blue", lwd=2, legend="LOESS fit", cex=1.4)
-
-#MEMs:
-hazRat <- predict(fitCPH, type="risk")
-head(hazRat)
-
-
-for (j in 1:2) { # residual plots
-  plot(X[, j], res, xlab=c("age", "prio")[j], ylab="residuals")
-  abline(h=0, lty=2)
-  lines(lowess(X[, j], res, iter=0))
-}
-
-#martingale are for testing linearity: want a linear rlship btwn martingale and cont predictors
