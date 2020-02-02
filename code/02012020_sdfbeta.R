@@ -109,6 +109,9 @@ svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR)+ AGE +
            factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
          design = diab.not.inf.svy) #doesn't really change things
 
+svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
+         design = diab.not.inf.svy) #doesn't really change things
+
 #############################################################################
 #do same for cvd
 #unadjusted model cvd
@@ -209,6 +212,9 @@ cvd.not.inf.svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWei
 svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN) + factor(EduR)+ AGE +
         factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
       design = cvd.not.inf.svy) #not much change
+
+svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN),
+         design = cvd.not.inf.svy) #not much change
 #############################################################################
 #do same for cvdht
 #unadjusted model cvdht
@@ -313,13 +319,290 @@ cvdht.not.inf.svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortW
 svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
            factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
          design = cvdht.not.inf.svy) #not much change
-##################################################################
-#check multicollinearity
-vifmod <- lm(data = eligible, formula =DEAD~ factor(CRN) + factor(EduR)+ AGE +
-     factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR))
-car::vif(vifmod)
 
-vifmod <- lm(data = eligible, formula =DEAD~ factor(CRN) + factor(EduR)+ AGE +
-               factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
-               factor(CancerEvBin) + factor(DiabetesRec) + factor(AnyCVDHT))
-car::vif(vifmod)
+svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN),
+         design = cvdht.not.inf.svy) #not much change
+##################################################################
+#adjusted model dm all cause
+mod2.diab.sdfbeta <- resid(mod2.diab.allcause, type = "dfbetas")
+dim(mod2.diab.sdfbeta)
+
+data.dm.mod2 <- diab.mort14.fin.sa$variables %>%
+  drop_na(SEX, CRN, allCauseMort, RaceR, IncomeR, InsType, EduR, AGE, CancerEvBin, AnyCVDHT)
+
+data.dm.mod2$resid.crn <- mod2.diab.sdfbeta[,1]
+data.dm.mod2$resid.edu2 <- mod2.diab.sdfbeta[,2]
+data.dm.mod2$resid.edu3 <- mod2.diab.sdfbeta[,3]
+data.dm.mod2$resid.age <- mod2.diab.sdfbeta[,4]
+data.dm.mod2$resid.inc1 <- mod2.diab.sdfbeta[,5]
+data.dm.mod2$resid.inc2 <- mod2.diab.sdfbeta[,6]
+data.dm.mod2$resid.inc3 <- mod2.diab.sdfbeta[,7]
+data.dm.mod2$resid.inc4 <- mod2.diab.sdfbeta[,8]
+data.dm.mod2$resid.inc5 <- mod2.diab.sdfbeta[,9]
+data.dm.mod2$resid.sex <- mod2.diab.sdfbeta[,10]
+data.dm.mod2$resid.ins1 <- mod2.diab.sdfbeta[,11]
+data.dm.mod2$resid.ins2 <- mod2.diab.sdfbeta[,12]
+data.dm.mod2$resid.ins3 <- mod2.diab.sdfbeta[,13]
+data.dm.mod2$resid.ins4 <- mod2.diab.sdfbeta[,14]
+data.dm.mod2$resid.ins5 <- mod2.diab.sdfbeta[,15]
+data.dm.mod2$resid.race2 <- mod2.diab.sdfbeta[,16]
+data.dm.mod2$resid.race3 <- mod2.diab.sdfbeta[,17]
+data.dm.mod2$resid.race4 <- mod2.diab.sdfbeta[,18]
+data.dm.mod2$resid.race5 <- mod2.diab.sdfbeta[,19]
+data.dm.mod2$resid.race6 <- mod2.diab.sdfbeta[,20]
+data.dm.mod2$resid.canc <- mod2.diab.sdfbeta[,21]
+data.dm.mod2$resid.cvdh <- mod2.diab.sdfbeta[,22]
+
+
+data.dm.mod2$id_num <- 1:nrow(data.dm.mod2)
+
+#plot these sdfbetas
+plot(data.dm.mod2$resid.crn, x= data.dm.mod2$id_num)
+plot(y = data.dm.mod2$resid.edu2, x = data.dm.mod2$id_num) 
+plot(y = data.dm.mod2$resid.edu3, x = data.dm.mod2$id_num) #<-.07
+plot(y = data.dm.mod2$resid.age, x = data.dm.mod2$id_num) # <-.07
+plot(y = data.dm.mod2$resid.inc1, x = data.dm.mod2$id_num)#>.15
+plot(y = data.dm.mod2$resid.inc2, x = data.dm.mod2$id_num) #abs(.1) 
+plot(y = data.dm.mod2$resid.inc3, x = data.dm.mod2$id_num) #<-.1
+plot(y = data.dm.mod2$resid.inc4, x = data.dm.mod2$id_num) # > .05 or <-.1
+plot(y = data.dm.mod2$resid.inc5, x = data.dm.mod2$id_num) #>.3
+plot(y = data.dm.mod2$resid.sex, x = data.dm.mod2$id_num) #>.1
+plot(y = data.dm.mod2$resid.ins1, x = data.dm.mod2$id_num) #<-.1
+plot(y = data.dm.mod2$resid.ins2, x = data.dm.mod2$id_num) # <-.1
+plot(y = data.dm.mod2$resid.ins3, x = data.dm.mod2$id_num) #abs(.1)
+plot(y = data.dm.mod2$resid.ins4, x = data.dm.mod2$id_num) #<-.1
+plot(y = data.dm.mod2$resid.ins5, x = data.dm.mod2$id_num) #>.18
+plot(y = data.dm.mod2$resid.race2, x = data.dm.mod2$id_num) 
+plot(y = data.dm.mod2$resid.race3, x = data.dm.mod2$id_num) # >.1
+plot(y = data.dm.mod2$resid.race4, x = data.dm.mod2$id_num) #>.2
+plot(y = data.dm.mod2$resid.race5, x = data.dm.mod2$id_num)
+plot(y = data.dm.mod2$resid.race6, x = data.dm.mod2$id_num) #abs(.05)
+#generate a summary measure of how many variables each obs
+#was influential on
+data.dm.mod2 <- data.dm.mod2 %>%
+  mutate(influence.meas = (abs(resid.race6) > 0.05) + (resid.race4 > .2) +
+           (resid.race3 > .1) +
+           (resid.ins5 > .18) + (resid.ins4 < (0-.1)) + (abs(resid.ins3) > .1) +
+           (resid.ins2 < (0-.1)) + (resid.ins1 < (0-.1)) + (resid.sex > .1) +
+           (resid.inc5 > .3) + (resid.inc3 < (0-.1)) + (abs(resid.inc2) > .1) + (resid.inc1 > .15) +
+           (resid.age < (0-.07)) + (abs(resid.edu3) < (0-.07)))
+
+table(data.dm.mod2$influence.meas)
+#65 are influential on just 1 measure, 5 on 2, 3 on 3, 3 on 4, and 2 on 6
+
+possible.inf <- data.dm.mod2[data.dm.mod2$influence.meas >=1,]
+table(possible.inf$CRN)
+table(possible.inf$allCauseMort)
+table(possible.inf$AGE)
+table(possible.inf$RaceR)
+table(possible.inf$InsType)
+table(possible.inf$EduR)
+table(possible.inf$SEX)
+table(possible.inf$CancerEvBin)
+table(possible.inf$AnyCVD)
+table(possible.inf$AnyCVDHT)
+#nothing especially notable about these. Nothing seems like it's awry: leave them in
+#possibly 10% with cancer, 60% with cvdht, 40% with cvd, college grads all ages
+
+diab.not.inf <- data.dm.mod2[data.dm.mod2$influence.meas == 0,]
+#refit model just to test
+diab.not.inf.svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight14,
+                              nest = TRUE, data = diab.not.inf)
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+           factor(CancerEvBin) + factor(AnyCVDHT),
+         design = diab.not.inf.svy) #doesn't really change things
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+         design = diab.not.inf.svy) #doesn't really change things
+
+##################################################################
+#adjusted model cvd all cause
+mod2.cvd.sdfbeta <- resid(mod2.cvd.allcause, type = "dfbetas")
+dim(mod2.cvd.sdfbeta)
+
+data.cvd.mod2 <- cvd.mort14.fin.sa$variables %>%
+  drop_na(SEX, CRN, allCauseMort, RaceR, IncomeR, InsType, EduR, AGE, CancerEvBin, DiabetesRec,
+          HyperTen)
+
+data.cvd.mod2$resid.crn <- mod2.cvd.sdfbeta[,1]
+data.cvd.mod2$resid.edu2 <- mod2.cvd.sdfbeta[,2]
+data.cvd.mod2$resid.edu3 <- mod2.cvd.sdfbeta[,3]
+data.cvd.mod2$resid.age <- mod2.cvd.sdfbeta[,4]
+data.cvd.mod2$resid.inc1 <- mod2.cvd.sdfbeta[,5]
+data.cvd.mod2$resid.inc2 <- mod2.cvd.sdfbeta[,6]
+data.cvd.mod2$resid.inc3 <- mod2.cvd.sdfbeta[,7]
+data.cvd.mod2$resid.inc4 <- mod2.cvd.sdfbeta[,8]
+data.cvd.mod2$resid.inc5 <- mod2.cvd.sdfbeta[,9]
+data.cvd.mod2$resid.sex <- mod2.cvd.sdfbeta[,10]
+data.cvd.mod2$resid.ins1 <- mod2.cvd.sdfbeta[,11]
+data.cvd.mod2$resid.ins2 <- mod2.cvd.sdfbeta[,12]
+data.cvd.mod2$resid.ins3 <- mod2.cvd.sdfbeta[,13]
+data.cvd.mod2$resid.ins4 <- mod2.cvd.sdfbeta[,14]
+data.cvd.mod2$resid.ins5 <- mod2.cvd.sdfbeta[,15]
+data.cvd.mod2$resid.race2 <- mod2.cvd.sdfbeta[,16]
+data.cvd.mod2$resid.race3 <- mod2.cvd.sdfbeta[,17]
+data.cvd.mod2$resid.race4 <- mod2.cvd.sdfbeta[,18]
+data.cvd.mod2$resid.race5 <- mod2.cvd.sdfbeta[,19]
+data.cvd.mod2$resid.race6 <- mod2.cvd.sdfbeta[,20]
+data.cvd.mod2$resid.canc <- mod2.cvd.sdfbeta[,21]
+data.cvd.mod2$resid.cvdh <- mod2.cvd.sdfbeta[,22]
+
+
+data.cvd.mod2$id_num <- 1:nrow(data.cvd.mod2)
+
+#plot these sdfbetas
+plot(y = data.cvd.mod2$resid.crn, x = data.cvd.mod2$id_num) #abs(.1)
+plot(y = data.cvd.mod2$resid.edu2, x = data.cvd.mod2$id_num) #abs(.1)
+plot(y = data.cvd.mod2$resid.edu3, x = data.cvd.mod2$id_num) #>.1
+plot(y = data.cvd.mod2$resid.age, x = data.cvd.mod2$id_num) # abs(.1)
+plot(y = data.cvd.mod2$resid.inc1, x = data.cvd.mod2$id_num)# < -.1
+plot(y = data.cvd.mod2$resid.inc2, x = data.cvd.mod2$id_num) #abs(.1) 
+plot(y = data.cvd.mod2$resid.inc3, x = data.cvd.mod2$id_num) #>.2
+plot(y = data.cvd.mod2$resid.inc4, x = data.cvd.mod2$id_num) # > .4
+plot(y = data.cvd.mod2$resid.inc5, x = data.cvd.mod2$id_num) #>.15
+plot(y = data.cvd.mod2$resid.sex, x = data.cvd.mod2$id_num) #>.1
+plot(y = data.cvd.mod2$resid.ins1, x = data.cvd.mod2$id_num) #<-.1
+plot(y = data.cvd.mod2$resid.ins2, x = data.cvd.mod2$id_num) # <-.18
+plot(y = data.cvd.mod2$resid.ins3, x = data.cvd.mod2$id_num) #abs(.1)
+plot(y = data.cvd.mod2$resid.ins4, x = data.cvd.mod2$id_num) #<-.15
+plot(y = data.cvd.mod2$resid.ins5, x = data.cvd.mod2$id_num) #>.4
+plot(y = data.cvd.mod2$resid.race2, x = data.cvd.mod2$id_num) #abs(.1)
+plot(y = data.cvd.mod2$resid.race3, x = data.cvd.mod2$id_num) # >.2
+plot(y = data.cvd.mod2$resid.race4, x = data.cvd.mod2$id_num) #abs(.3)
+plot(y = data.cvd.mod2$resid.race5, x = data.cvd.mod2$id_num) #>.2
+plot(y = data.cvd.mod2$resid.race6, x = data.cvd.mod2$id_num) #abs(.05)
+#generate a summary measure of how many variables each obs
+#was influential on
+data.cvd.mod2 <- data.cvd.mod2 %>%
+  mutate(influence.meas = (abs(resid.race6) > 0.05) +(abs(resid.race5) > .2) + (abs(resid.race4) > .3) +
+           (resid.race3 > .2) + (abs(resid.race2) > .1) + 
+           (abs(resid.ins5) > .4) + (resid.ins4 < (0-.15)) + (abs(resid.ins3) > .1) +
+           (resid.ins2 < (0-.18)) + (resid.ins1 < (0-.1)) + (resid.sex > .1) +(resid.inc5 >.15) +
+           (resid.inc4 > .4) + (resid.inc3 >.2) + (abs(resid.inc2) > .1) + (resid.inc1 < (0-.1)) +
+           (abs(resid.age) > (.1)) + (resid.edu3 >.1) +(abs(resid.edu2) >.1)+(abs(resid.crn) >.1))
+
+table(data.cvd.mod2$influence.meas)
+#121 are influential on just 1 measure, 14 on 2, 11 on 3, 5 on 4, and 2 on 6
+
+possible.inf <- data.cvd.mod2[data.cvd.mod2$influence.meas >=1,]
+table(possible.inf$CRN)
+table(possible.inf$allCauseMort)
+table(possible.inf$AGE)
+table(possible.inf$RaceR)
+table(possible.inf$InsType)
+table(possible.inf$EduR)
+table(possible.inf$SEX)
+table(possible.inf$CancerEvBin)
+table(possible.inf$DiabetesRec)
+median(possible.inf$fuTime)
+#nothing especially notable about these. Nothing seems like it's awry: leave them in
+#possibly 10% with cancer, 60% with cvdht, 40% with cvd, college grads all ages
+
+cvd.not.inf <- data.cvd.mod2[data.cvd.mod2$influence.meas == 0,]
+#refit model just to test
+cvd.not.inf.svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight14,
+                              nest = TRUE, data = cvd.not.inf)
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+           factor(CancerEvBin) + factor(DiabetesRec) + factor(HyperTen),
+         design = cvd.not.inf.svy) #doesn't really change things
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+         design = cvd.not.inf.svy) #doesn't really change things
+
+##################################################################
+#adjusted model cvdht all cause
+mod2.cvdht.sdfbeta <- resid(mod2.cvdht.allcause, type = "dfbetas")
+dim(mod2.cvdht.sdfbeta)
+
+data.cvdht.mod2 <- cvdht.mort14.fin.sa$variables %>%
+  drop_na(SEX, CRN, allCauseMort, RaceR, IncomeR, InsType, EduR, AGE, CancerEvBin, DiabetesRec)
+
+data.cvdht.mod2$resid.crn <- mod2.cvdht.sdfbeta[,1]
+data.cvdht.mod2$resid.edu2 <- mod2.cvdht.sdfbeta[,2]
+data.cvdht.mod2$resid.edu3 <- mod2.cvdht.sdfbeta[,3]
+data.cvdht.mod2$resid.age <- mod2.cvdht.sdfbeta[,4]
+data.cvdht.mod2$resid.inc1 <- mod2.cvdht.sdfbeta[,5]
+data.cvdht.mod2$resid.inc2 <- mod2.cvdht.sdfbeta[,6]
+data.cvdht.mod2$resid.inc3 <- mod2.cvdht.sdfbeta[,7]
+data.cvdht.mod2$resid.inc4 <- mod2.cvdht.sdfbeta[,8]
+data.cvdht.mod2$resid.inc5 <- mod2.cvdht.sdfbeta[,9]
+data.cvdht.mod2$resid.sex <- mod2.cvdht.sdfbeta[,10]
+data.cvdht.mod2$resid.ins1 <- mod2.cvdht.sdfbeta[,11]
+data.cvdht.mod2$resid.ins2 <- mod2.cvdht.sdfbeta[,12]
+data.cvdht.mod2$resid.ins3 <- mod2.cvdht.sdfbeta[,13]
+data.cvdht.mod2$resid.ins4 <- mod2.cvdht.sdfbeta[,14]
+data.cvdht.mod2$resid.ins5 <- mod2.cvdht.sdfbeta[,15]
+data.cvdht.mod2$resid.race2 <- mod2.cvdht.sdfbeta[,16]
+data.cvdht.mod2$resid.race3 <- mod2.cvdht.sdfbeta[,17]
+data.cvdht.mod2$resid.race4 <- mod2.cvdht.sdfbeta[,18]
+data.cvdht.mod2$resid.race5 <- mod2.cvdht.sdfbeta[,19]
+data.cvdht.mod2$resid.race6 <- mod2.cvdht.sdfbeta[,20]
+data.cvdht.mod2$resid.canc <- mod2.cvdht.sdfbeta[,21]
+data.cvdht.mod2$resid.cvdhth <- mod2.cvdht.sdfbeta[,22]
+
+#add id number
+data.cvdht.mod2$id_num <- 1:nrow(data.cvdht.mod2)
+
+#plot these sdfbetas
+plot(y = data.cvdht.mod2$resid.crn, x = data.cvdht.mod2$id_num) #abs(.1)
+plot(y = data.cvdht.mod2$resid.edu2, x = data.cvdht.mod2$id_num) #>.15
+plot(y = data.cvdht.mod2$resid.edu3, x = data.cvdht.mod2$id_num) #> (abs.05)
+plot(y = data.cvdht.mod2$resid.age, x = data.cvdht.mod2$id_num) # abs(.1)
+plot(y = data.cvdht.mod2$resid.inc1, x = data.cvdht.mod2$id_num)# < -.1
+plot(y = data.cvdht.mod2$resid.inc2, x = data.cvdht.mod2$id_num) #abs(.05) 
+plot(y = data.cvdht.mod2$resid.inc3, x = data.cvdht.mod2$id_num) #abs(.1)
+plot(y = data.cvdht.mod2$resid.inc4, x = data.cvdht.mod2$id_num) # > .1
+plot(y = data.cvdht.mod2$resid.inc5, x = data.cvdht.mod2$id_num) #abs(.2)
+plot(y = data.cvdht.mod2$resid.sex, x = data.cvdht.mod2$id_num) #>.2
+plot(y = data.cvdht.mod2$resid.ins1, x = data.cvdht.mod2$id_num) #>.07
+plot(y = data.cvdht.mod2$resid.ins2, x = data.cvdht.mod2$id_num) # abs(.1)
+plot(y = data.cvdht.mod2$resid.ins3, x = data.cvdht.mod2$id_num) #abs(.1)
+plot(y = data.cvdht.mod2$resid.ins4, x = data.cvdht.mod2$id_num) #>.1
+plot(y = data.cvdht.mod2$resid.ins5, x = data.cvdht.mod2$id_num) 
+plot(y = data.cvdht.mod2$resid.race2, x = data.cvdht.mod2$id_num) #>.4
+plot(y = data.cvdht.mod2$resid.race3, x = data.cvdht.mod2$id_num) # >.1
+plot(y = data.cvdht.mod2$resid.race4, x = data.cvdht.mod2$id_num) #>.15
+plot(y = data.cvdht.mod2$resid.race5, x = data.cvdht.mod2$id_num) #abs(.2)
+plot(y = data.cvdht.mod2$resid.race6, x = data.cvdht.mod2$id_num) #abs(.2)
+#generate a summary measure of how many variables each obs
+#was influential on
+data.cvdht.mod2 <- data.cvdht.mod2 %>%
+  mutate(influence.meas = (abs(resid.race6) > .2) +(abs(resid.race5) > .2) + (abs(resid.race4) > .15) +
+           (resid.race3 > .1) + (resid.race2 > .4) + 
+           (resid.ins4 > .1) + (abs(resid.ins3) > .1) +
+           (abs(resid.ins2) > .1) + (resid.ins1 >.07) + (resid.sex > .2) + (resid.inc5 >.15) +
+           (resid.inc4 > .1) + (abs(resid.inc3) >.1) + (abs(resid.inc2) > .05) + (resid.inc1 < (0-.1)) +
+           (abs(resid.age) > (.1)) + (abs(resid.edu3) >.05) +(abs(resid.edu2) >.15)+(abs(resid.crn) >.1))
+
+table(data.cvdht.mod2$influence.meas)
+#89 are influential on just 1 measure, 21 on 2, 9 on 3, 3 on 4, and 1 on 6
+
+possible.inf <- data.cvdht.mod2[data.cvdht.mod2$influence.meas >=1,]
+table(possible.inf$CRN)
+table(possible.inf$allCauseMort)
+table(possible.inf$AGE)
+table(possible.inf$RaceR)
+table(possible.inf$InsType)
+table(possible.inf$EduR)
+table(possible.inf$SEX)
+table(possible.inf$CancerEvBin)
+table(possible.inf$DiabetesRec)
+median(possible.inf$fuTime)
+#nothing especially notable about these. Nothing seems like it's awry
+
+cvdht.not.inf <- data.cvdht.mod2[data.cvdht.mod2$influence.meas == 0,]
+#refit model just to test
+cvdht.not.inf.svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight14,
+                             nest = TRUE, data = cvdht.not.inf)
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+           factor(CancerEvBin) + factor(DiabetesRec),
+         design = cvdht.not.inf.svy) #doesn't really change things
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+         design = cvdht.not.inf.svy) #doesn't really change things
