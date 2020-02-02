@@ -313,4 +313,13 @@ cvdht.not.inf.svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortW
 svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
            factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
          design = cvdht.not.inf.svy) #not much change
+##################################################################
+#check multicollinearity
+vifmod <- lm(data = eligible, formula =DEAD~ factor(CRN) + factor(EduR)+ AGE +
+     factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR))
+car::vif(vifmod)
 
+vifmod <- lm(data = eligible, formula =DEAD~ factor(CRN) + factor(EduR)+ AGE +
+               factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+               factor(CancerEvBin) + factor(DiabetesRec) + factor(AnyCVDHT))
+car::vif(vifmod)
