@@ -87,6 +87,9 @@ table(data.dm.mod2$influence.meas)
 #106 are influential on just 1 measure, 8 on 2, 4 on 3, 1, on 4, and 2 on 6
 
 possible.inf <- data.dm.mod2[data.dm.mod2$influence.meas >=1,]
+#write out this data
+write_csv(possible.inf, "data//possible_inf_diab.csv")
+
 table(possible.inf$CRN)
 table(possible.inf$diabMort)
 table(possible.inf$AGE)
@@ -101,17 +104,49 @@ table(possible.inf$AnyCVDHT)
 #possibly just those with more comorbidity: a lot have cvd and cancer
 
 diab.not.inf <- data.dm.mod2[data.dm.mod2$influence.meas == 0,]
+
 #refit model just to test
 diab.not.inf.svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight14,
                              nest = TRUE, data = diab.not.inf)
+
+diab.not.inf.svy20 <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight10,
+                              nest = TRUE, data = diab.not.inf)
+diab.not.inf.svy20 <- subset(diab.not.inf.svy20, YEAR <= 2010)
+
+diab.not.inf.svy5 <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight5,
+                                nest = TRUE, data = diab.not.inf)
+diab.not.inf.svy5 <- subset(diab.not.inf.svy5, YEAR > 2010)
 
 svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR)+ AGE +
            factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
          design = diab.not.inf.svy) #doesn't really change things
 
 svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
-         design = diab.not.inf.svy) #doesn't really change things
+         design = diab.not.inf.svy) %>% #doesn't really change things
+  summary()
 
+#do early and late years
+svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
+         design = diab.not.inf.svy20) %>% #doesn't really change things
+  summary()
+
+svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
+         design = diab.not.inf.svy20) %>% #doesn't really change things
+  summary()
+
+svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
+         design = diab.not.inf.svy5) %>% #doesn't really change things
+  summary()
+
+svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
+         design = diab.not.inf.svy5) %>% #doesn't really change things
+  summary()
+
+quantile(diab.not.inf.svy$variables$fuTime)
+quantile(diab.not.inf.svy20$variables$fuTime)
+quantile(diab.not.inf.svy5$variables$fuTime)
 #############################################################################
 #do same for cvd
 #unadjusted model cvd
@@ -192,6 +227,8 @@ data.cvd.mod2 <- data.cvd.mod2 %>%
 table(data.cvd.mod2$influence.meas)
 
 possible.inf.cvd <- data.cvd.mod2[data.cvd.mod2$influence.meas >=1,]
+#write out to csv
+write_csv(possible.inf.cvd, "data//possible_inf_cvd.csv")
 table(possible.inf.cvd$CRN)
 table(possible.inf.cvd$cvdMort)
 table(possible.inf.cvd$AGE)
@@ -209,12 +246,47 @@ cvd.not.inf <- data.cvd.mod2[data.cvd.mod2$influence.meas == 0,]
 cvd.not.inf.svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight14,
                              nest = TRUE, data = cvd.not.inf)
 
+cvd.not.inf.svy10 <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight10,
+                             nest = TRUE, data = cvd.not.inf)
+cvd.not.inf.svy10 <- subset(cvd.not.inf.svy10, YEAR <= 2010)
+
+cvd.not.inf.svy5 <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight5,
+                               nest = TRUE, data = cvd.not.inf)
+cvd.not.inf.svy5 <- subset(cvd.not.inf.svy5, YEAR > 2010)
+
+#all years
 svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN) + factor(EduR)+ AGE +
         factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
-      design = cvd.not.inf.svy) #not much change
+      design = cvd.not.inf.svy) %>% #not much change
+  summary()
 
 svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN),
-         design = cvd.not.inf.svy) #not much change
+         design = cvd.not.inf.svy) %>%  #not much change
+  summary()
+
+#early
+svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
+         design = cvd.not.inf.svy10) %>% #not much change
+  summary()
+
+svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN),
+         design = cvd.not.inf.svy10) %>%  #not much change
+  summary()
+#late
+svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
+         design = cvd.not.inf.svy5) %>% #not much change
+  summary()
+
+svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN),
+         design = cvd.not.inf.svy5) %>%  #not much change
+  summary()
+
+quantile(cvd.not.inf.svy$variables$fuTime)
+quantile(cvd.not.inf.svy10$variables$fuTime)
+quantile(cvd.not.inf.svy5$variables$fuTime)
+
 #############################################################################
 #do same for cvdht
 #unadjusted model cvdht
@@ -298,6 +370,8 @@ data.cvdht.mod2 <- data.cvdht.mod2 %>%
 table(data.cvdht.mod2$influence.meas)
 
 possible.inf.cvdht <- data.cvdht.mod2[data.cvdht.mod2$influence.meas >=2,]
+#write to csv
+write_csv(possible.inf.cvdht, "data\\possible_inf_cvdht.csv")
 
 table(possible.inf.cvdht$CRN)
 table(possible.inf.cvdht$cvdHtMort)
@@ -316,12 +390,41 @@ cvdht.not.inf <- data.cvdht.mod2[data.cvdht.mod2$influence.meas <2,]
 cvdht.not.inf.svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight14,
                              nest = TRUE, data = cvdht.not.inf)
 
+cvdht.not.inf.svy10 <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight10,
+                               nest = TRUE, data = cvdht.not.inf)
+cvdht.not.inf.svy10 <- subset(cvdht.not.inf.svy10, YEAR <= 2010)
+
+cvdht.not.inf.svy5 <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight5,
+                                 nest = TRUE, data = cvdht.not.inf)
+cvdht.not.inf.svy5 <- subset(cvdht.not.inf.svy5, YEAR >2010)
+
 svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
            factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
          design = cvdht.not.inf.svy) #not much change
 
 svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN),
          design = cvdht.not.inf.svy) #not much change
+
+#early years
+svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
+         design = cvdht.not.inf.svy10) %>% summary() #not much change
+
+svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN),
+         design = cvdht.not.inf.svy10) %>%  summary() #not much change
+
+#late
+svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
+         design = cvdht.not.inf.svy5) %>% summary() #not much change
+
+svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN),
+         design = cvdht.not.inf.svy5) %>%  summary() #not much change
+
+quantile(cvdht.not.inf.svy$variables$fuTime)
+quantile(cvdht.not.inf.svy10$variables$fuTime)
+quantile(cvdht.not.inf.svy5$variables$fuTime)
+
 ##################################################################
 #adjusted model dm all cause
 mod2.diab.sdfbeta <- resid(mod2.diab.allcause, type = "dfbetas")
@@ -355,6 +458,8 @@ data.dm.mod2$resid.cvdh <- mod2.diab.sdfbeta[,22]
 
 
 data.dm.mod2$id_num <- 1:nrow(data.dm.mod2)
+
+
 
 #plot these sdfbetas
 plot(data.dm.mod2$resid.crn, x= data.dm.mod2$id_num)
@@ -391,6 +496,9 @@ table(data.dm.mod2$influence.meas)
 #65 are influential on just 1 measure, 5 on 2, 3 on 3, 3 on 4, and 2 on 6
 
 possible.inf <- data.dm.mod2[data.dm.mod2$influence.meas >=1,]
+#write it out
+write_csv(possible.inf, "data\\possible_inf_diabAC.csv")
+
 table(possible.inf$CRN)
 table(possible.inf$allCauseMort)
 table(possible.inf$AGE)
@@ -408,6 +516,12 @@ diab.not.inf <- data.dm.mod2[data.dm.mod2$influence.meas == 0,]
 #refit model just to test
 diab.not.inf.svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight14,
                               nest = TRUE, data = diab.not.inf)
+diab.not.inf.svy10 <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight10,
+                              nest = TRUE, data = diab.not.inf)
+diab.not.inf.svy5 <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight5,
+                              nest = TRUE, data = diab.not.inf)
+diab.not.inf.svy10 <- subset(diab.not.inf.svy10, YEAR <= 2010)
+diab.not.inf.svy5 <- subset(diab.not.inf.svy5, YEAR > 2010)
 
 svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
            factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
@@ -416,6 +530,22 @@ svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
 
 svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
          design = diab.not.inf.svy) #doesn't really change things
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+           factor(CancerEvBin) + factor(AnyCVDHT),
+         design = diab.not.inf.svy10) %>% summary() #doesn't really change things
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+         design = diab.not.inf.svy10) %>% summary() #doesn't really change things
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+           factor(CancerEvBin) + factor(AnyCVDHT),
+         design = diab.not.inf.svy5) %>% summary() #doesn't really change things
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+         design = diab.not.inf.svy5) %>% summary() #doesn't really change things
 
 ##################################################################
 #adjusted model cvd all cause
@@ -487,6 +617,9 @@ table(data.cvd.mod2$influence.meas)
 #121 are influential on just 1 measure, 14 on 2, 11 on 3, 5 on 4, and 2 on 6
 
 possible.inf <- data.cvd.mod2[data.cvd.mod2$influence.meas >=1,]
+#write it out
+write_csv(possible.inf, "data\\possible_inf_cvd_allcause.csv")
+
 table(possible.inf$CRN)
 table(possible.inf$allCauseMort)
 table(possible.inf$AGE)
@@ -504,6 +637,13 @@ cvd.not.inf <- data.cvd.mod2[data.cvd.mod2$influence.meas == 0,]
 #refit model just to test
 cvd.not.inf.svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight14,
                               nest = TRUE, data = cvd.not.inf)
+cvd.not.inf.svy10 <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight10,
+                             nest = TRUE, data = cvd.not.inf)
+cvd.not.inf.svy5 <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight5,
+                             nest = TRUE, data = cvd.not.inf)
+
+cvd.not.inf.svy10 <- subset(cvd.not.inf.svy10, YEAR <= 2010)
+cvd.not.inf.svy5 <- subset(cvd.not.inf.svy5, YEAR > 2010)
 
 svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
            factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
@@ -512,6 +652,23 @@ svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
 
 svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
          design = cvd.not.inf.svy) #doesn't really change things
+
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+           factor(CancerEvBin) + factor(DiabetesRec) + factor(HyperTen),
+         design = cvd.not.inf.svy10) %>% summary() #doesn't really change things
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+         design = cvd.not.inf.svy10) %>% summary() #doesn't really change things
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+           factor(CancerEvBin) + factor(DiabetesRec) + factor(HyperTen),
+         design = cvd.not.inf.svy5) %>% summary() #doesn't really change things
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+         design = cvd.not.inf.svy5) %>% summary() #doesn't really change things
 
 ##################################################################
 #adjusted model cvdht all cause
@@ -582,6 +739,8 @@ table(data.cvdht.mod2$influence.meas)
 #89 are influential on just 1 measure, 21 on 2, 9 on 3, 3 on 4, and 1 on 6
 
 possible.inf <- data.cvdht.mod2[data.cvdht.mod2$influence.meas >=1,]
+write.csv(possible.inf, "data\\possible_inf_cvdht_allcause.csv")
+
 table(possible.inf$CRN)
 table(possible.inf$allCauseMort)
 table(possible.inf$AGE)
@@ -598,6 +757,13 @@ cvdht.not.inf <- data.cvdht.mod2[data.cvdht.mod2$influence.meas == 0,]
 #refit model just to test
 cvdht.not.inf.svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight14,
                              nest = TRUE, data = cvdht.not.inf)
+cvdht.not.inf.svy10 <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight10,
+                               nest = TRUE, data = cvdht.not.inf)
+cvdht.not.inf.svy5 <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight5,
+                               nest = TRUE, data = cvdht.not.inf)
+
+cvdht.not.inf.svy10 <- subset(cvdht.not.inf.svy10, YEAR <= 2010)
+cvdht.not.inf.svy5 <- subset(cvdht.not.inf.svy5, YEAR > 2010)
 
 svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
            factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
@@ -606,3 +772,37 @@ svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
 
 svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
          design = cvdht.not.inf.svy) #doesn't really change things
+
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+           factor(CancerEvBin) + factor(DiabetesRec),
+         design = cvdht.not.inf.svy10) %>% summary() #doesn't really change things
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+         design = cvdht.not.inf.svy10) %>% summary() #doesn't really change things
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+           factor(CancerEvBin) + factor(DiabetesRec),
+         design = cvdht.not.inf.svy5) %>% summary() #doesn't really change things
+
+svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+         design = cvdht.not.inf.svy5) %>% summary() #doesn't really change things
+
+quantile(diab.mort14.fin.sa$variables$fuTime, na.rm =T)
+quantile(cvd.mort14.fin.sa$variables$fuTime, na.rm =T)
+quantile(cvdht.mort14.fin.sa$variables$fuTime, na.rm =T)
+
+quantile(diab.mort10.fin.sa$variables$fuTime, na.rm =T)
+quantile(cvd.mort10.fin.sa$variables$fuTime, na.rm =T)
+quantile(cvdht.mort10.fin.sa$variables$fuTime, na.rm =T)
+
+quantile(diab.mort5.fin.sa$variables$fuTime, na.rm =T)
+quantile(cvd.mort5.fin.sa$variables$fuTime, na.rm =T)
+quantile(cvdht.mort5.fin.sa$variables$fuTime, na.rm =T)
+
+
+quantile(diab.not.inf.svy$variables$fuTime, na.rm =T)
+quantile(cvd.not.inf.svy$variables$fuTime, na.rm =T)
+quantile(cvdht.not.inf.svy$variables$fuTime, na.rm =T)

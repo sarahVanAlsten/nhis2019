@@ -41,7 +41,7 @@ eligible <- eligible %>%
                       ifelse(is.na(BarrierMedR)& is.na(skipMed) & is.na(lessMed) &is.na(delayMed) & (YEAR >=2011), NA,
                              ifelse(BarrierMedR == 0 & YEAR <=2010, 0,
                                     ifelse(BarrierMedR == 1 | skipMed == 1 | lessMed == 1 | delayMed == 1, 1, 0)))))
-         
+
 
 table(eligible$CRN, eligible$ASTATFLG, useNA = "ifany")
 

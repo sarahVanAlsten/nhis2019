@@ -192,11 +192,6 @@ mod2.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)
                                   factor(DiabetesRec) + factor(CancerEvBin),
                                 design = cvdht.mort14.fin.sa)
 
-mod2.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)*factor(ifelse(YEAR <= 2010,1,2))+ factor(EduR)+ AGE +
-                                  factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
-                                  factor(DiabetesRec) + factor(CancerEvBin),
-                                design = cvdht.mort14.fin.sa)
-
 summary(mod2.cvdht.allcause)
 result.data <- rbind(result.data, addResult(mod2.cvdht.allcause, "2000 - 2014", "cvdht", "adjusted", "allcause"))
 
