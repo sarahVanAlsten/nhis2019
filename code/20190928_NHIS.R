@@ -4,7 +4,7 @@
 #Read in the NHIS file from IPUMS and start browsing
 #Packages used: ipumsr, tidyverse, tableone, survival, survey
 #Last Update: Dec 10, 2019
-#######################################################################################################
+#####################################################################
 #read in the IPUMS data 
 # NOTE: To load data, you must download both the extract's data and the DDI
 # and also set the working directory to the folder with these files (or change the path below).
@@ -234,20 +234,8 @@ eligible %>%
             NoHA =sum(Stroke==0, na.rm = T),
             NoHADead = sum(Stroke==0 &DEAD==1, na.rm = T))
 
-table(eligible$Stroke, eligible$DEAD)
-table(eligible$AngPec, eligible$DEAD)
-table(eligible$HeartAtt, eligible$DEAD)
-table(eligible$HeartDz, eligible$DEAD)
-table(eligible$HyperTen, eligible$DEAD)
-table(eligible$CHD, eligible$DEAD)
-table(eligible$HyperTen)
-table(eligible$CHD)
-#cancerPrevalence = cancer_Type_Year$TotalCancer/cancer_Type_Year$TotalPeople
-
-
 #leading cause of death: 1= heart dz, 2=cancer/neoplasm, 3=chronic lower respiratory, 4=accident, 5=cerebrovascular dz
 #6 = alzheimers, 7 = diabetes, 8 =influenza, 9=nephritis, 10=all other, 96 = NIU/NA
-table(eligible$MORTUCODLD)
 
 #binary causes of death
 eligible <- eligible %>%
@@ -531,20 +519,6 @@ eligible %>%
             foreign = sum(foreignMed==1, na.rm = T),
             alternate = sum(alternateMed==1, na.rm = T))
 
-
-table(eligible$skipMed, eligible$delayMed) #OR = 130
-#(6861*99600)/(3882*1354)
-table(eligible$skipMed, eligible$CheapMed) #OR = 1.34
-#(5937*8658)/(16888*2273)
-table(eligible$skipMed, eligible$foreignMed) #OR = 6.06
-#(668*101989)/(1489*7547)
-table(eligible$skipMed, eligible$alternateMed)#OR = 10.47
-#(2116*100146)/(3321*6095)
-table(eligible$CheapMed, eligible$foreignMed)#OR = 4.51
-#(1136*87826)/(21690*1020)
-table(eligible$CheapMed, eligible$delayMed)# OR = 15.04
-#(7782*85886)/(15044*2954)
-
 #create variable for any cost related barrier to care
 #DELAYCOSTR BarrierCareR BarrierMedR BarrierFUR BarrierSpecR (BarrierMHR)
 eligible %>%
@@ -605,7 +579,7 @@ CreateCatTable(vars = c("anyCostBarrier", "anyMedBx", "numCostBarrier", "numMedB
 #Worried about health care cost: is reverse coded
 eligible <- eligible %>%
   mutate(WorryHC = ifelse(WRYHCCST %in% c(0,7,8,9), NA, 4-WRYHCCST))
-table(eligible$WorryHC)
+
 
 eligible %>% 
   group_by(DiabetesRec)%>%
@@ -939,15 +913,6 @@ CreateCatTable(vars = "SmokeR", strata = "HeartAtt", data = eligible)
 CreateCatTable(vars = "SmokeR", strata = "AngPec", data = eligible)
 CreateCatTable(vars = "SmokeR", strata = "Stroke", data = eligible)
 ########################################################
-table(eligible$DiabetesRec)
-table(eligible$DIABETICEV)
-table(eligible$DEAD)
-table(eligible$DEAD, eligible$DiabetesRec)
-table(eligible$DELAYCOSTR)
-table(eligible$CNBRES)
-table(eligible$CNUTER)
-table(eligible$CNCERV)
-table(eligible$CNBRES, eligible$DEAD)
 
 eligible %>%
   group_by(YEAR)%>%
@@ -1031,13 +996,6 @@ write.csv(inconFU, "C:\\Users\\Owner\\OneDrive\\Documents\\Fall_2019\\Capstone\\
 nhis <- eligible[eligible$fuTime > 0 | is.na(eligible$fuTime),]
 rm(subData)
 
-
-
-table(eligible$DiabDeath,  eligible$BarrierMedR)
-table(eligible$CvdDeath,  eligible$BarrierMedR)
-table(eligible$MORTDIAB,  eligible$BarrierMedR)
-table(eligible$MORTHYPR,  eligible$BarrierMedR)
-
 #Add up number of conditions
 eligible$AnyHC <-ifelse(eligible$CHD==1 | eligible$HeartAtt==1 | eligible$AngPec==1 |
                           eligible$HeartDz==1, 1,
@@ -1071,16 +1029,6 @@ eligible <- eligible %>%
                                   ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, ifelse(DEAD == 1, 0 ,NA)))) %>%
   mutate(DzSpecificCVD_NoNA = ifelse(MORTUCOD >=56 & MORTUCOD <= 75, 1,
                                        ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, 0)))
-
-table(eligible$DzSpecificCVD)
-table(eligible$DzSpecificCVD_NoNA)
-table(eligible$DzSpecificCVDHT)
-table(eligible$DzSpecificCVDHT_NoNA)
-table(eligible$DzSpecificDiab)
-table(eligible$DzSpecificDiab_NoNA)
-
-table(eligible$DzSpecificDiab, eligible$DiabetesRec2, useNA = "ifany")
-table(eligible$DzSpecificCVD, eligible$AnyCVD, useNA = "ifany")
 
 
 eligible%>% group_by(YEAR)%>%summarise(mean(MORTDIAB, na.rm = T))
