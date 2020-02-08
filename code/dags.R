@@ -40,7 +40,7 @@ dag4 <-dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN + Age + S
               Smoking ~ Edu + Race + Sex + Income,
               labels = c("CRN" = "CRN", 
                          "Smoking" = "Smoking",
-                         "Insurance" = "Insurance",
+                         "Insurance" = "Ins",
                          "BMI" = "BMI", 
                          "Income" = "Income",
                          "Mortality" = "Dz Specific Mortality",
@@ -54,7 +54,7 @@ ggdag(dag4, text = T) + theme_dag()
 
 coords <- list(
         x = c(Mortality = 7, CRN = 5, Sex = 3, Race = 3, Insurance = 4.5,
-              Income = 4.5, BMI = 5, Edu = 2, Smoking = 1, Age = 7),
+              Income = 5, BMI = 5, Edu = 1.8, Smoking = 1, Age = 7),
         y = c(Mortality = 5, CRN = 5, Sex = 6, Race = 3, Insurance = 7,
               Income = 3, BMI = 1, Edu = 1, Smoking = 4, Age =  2)
         )
@@ -62,10 +62,12 @@ coords <- list(
 #put into data frame and change coords to make visually appealing
 coord_df <- coords2df(coords)
 coordinates(dag4) <- coords2list(coord_df)
-ggdag(dag4, text = T, text_size = 2.5) + theme_dag()
-ggdag_adjustment_set(dag4, text = T, shadow = TRUE, text_col = "black") + theme_dag()
+ggdag(dag4, text = T, text_size = 3) + theme_dag()
+ggdag_adjustment_set(dag4, text = T, shadow = TRUE, text_col = "black", stylized = T) +
+        theme_dag()
 
-#
+
+
 allCauseDag <- dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN + Age + Sex + Income + Chronic,
                       Insurance ~ Income + Age + Edu,
                       CRN ~ Income + Age + Sex + Insurance + Edu + Race + Chronic,
@@ -91,9 +93,9 @@ allCauseDag <- dagify(Mortality ~ Smoking + Edu + Race + BMI + Insurance + CRN +
 
 coordsAC <- list(
         x = c(Mortality = 8, CRN = 5, Sex = 3, Race = 3, Insurance = 4.5,
-              Income = 4.5, BMI = 5, Edu = 2, Smoking = 1, Age = 7, Chronic = 7),
+              Income = 4.8, BMI = 5, Edu = 2, Smoking = 2, Age = 7, Chronic = 7),
         y = c(Mortality = 3, CRN = 5, Sex = 6, Race = 3, Insurance = 7,
-              Income = 3.4, BMI = 1, Edu = 1, Smoking = 4, Age =  2, Chronic = 5)
+              Income = 3.4, BMI = 1, Edu = 1, Smoking = 5, Age =  2, Chronic = 5)
 )
 
 #put into data frame
