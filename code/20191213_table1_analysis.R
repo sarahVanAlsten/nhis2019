@@ -47,11 +47,12 @@ table(eligible$CRN, eligible$ASTATFLG, useNA = "ifany")
 
 #sum of crn bx
 crnSum <- eligible %>%
-  mutate(crnSum = lessMed + skipMed + delayMed + BarrierMedR) %>%
-  summarise(sum(crnSum ==1, na.rm = T),
-            sum(crnSum ==2, na.rm = T),
-            sum(crnSum ==3, na.rm = T),
-            sum(crnSum ==4, na.rm = T))
+  filter(YEAR > 2010) %>%
+  mutate(crnSum = lessMed + skipMed + delayMed) %>%
+  summarise(sum(crnSum ==1, na.rm = T)/16297,
+            sum(crnSum ==2, na.rm = T)/16297,
+            sum(crnSum ==3, na.rm = T)/16297,
+            sum(crnSum ==4, na.rm = T)/16297)
 
 #the reason it's 15 and 11 is because 2000-2014 is actually 15 total cycles,
 #and 2000-2010 is 11 cycles!
@@ -205,40 +206,86 @@ cvdht.mort5.fin.sa <- subset(mort5sa.Svy, AnyCVDHT == 1 & finprobsa5 == TRUE)
 ######################################################################################
 #now, get descriptive statistics
 #FIRST, for CRN bx assessed in late years
+write.csv(
+  print(
 svyCreateTableOne(vars = c("skipMed", "delayMed", "lessMed"), strata = 'CRN', data = diab.samp5, 
                   factorVars = c("skipMed", "delayMed", "lessMed"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE)
+                  test = TRUE, smd = TRUE), quote = FALSE, 
+noSpaces = TRUE, printToggle = FALSE
+),
+file = "data\\diabCRNtab.csv")
+
+write.csv(
+  print(
 svyCreateTableOne(vars = c("skipMed", "delayMed", "lessMed"), strata = 'CRN', data = cvd.samp5, 
                   factorVars = c("skipMed", "delayMed", "lessMed"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE)
+                  test = TRUE, smd = TRUE), quote = FALSE, 
+      noSpaces = TRUE, printToggle = FALSE),
+file = "data\\cvdCRNtab.csv")
+
+
+write.csv(
+  print(
 svyCreateTableOne(vars = c("skipMed", "delayMed", "lessMed"), strata = 'CRN', data = cvdht.samp5, 
                   factorVars = c("skipMed", "delayMed", "lessMed"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE)
+                  test = TRUE, smd = TRUE), quote = FALSE, 
+noSpaces = TRUE, printToggle = FALSE), file = "data\\cvdhtCRNtab.csv")
 
-#now the remaining two questions asked of sample adults
+#now the remaining two questions asked of sample adults:all yrs
+write.csv(
+  print(
 svyCreateTableOne(vars = c("BarrierMedR", "SmokeR"), strata = 'CRN', data = diab.samp14, 
                   factorVars = c("BarrierMedR", "SmokeR"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE)
-svyCreateTableOne(vars = c("BarrierMedR", "SmokeR"), strata = 'CRN', data = cvd.samp14, 
-                  factorVars = c("BarrierMedR", "SmokeR"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE)
-svyCreateTableOne(vars = c("BarrierMedR", "SmokeR"), strata = 'CRN', data = cvdht.samp14, 
-                  factorVars = c("BarrierMedR", "SmokeR"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE)
+                  test = TRUE, smd = TRUE), quote = FALSE, 
+noSpaces = TRUE, printToggle = FALSE
 
-#now things assessed for all participants
-svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
+), file = "data\\diabSmoke.csv")
+write.csv(
+  print(
+    svyCreateTableOne(vars = c("BarrierMedR", "SmokeR"), strata = 'CRN', data = cvd.samp14, 
+                      factorVars = c("BarrierMedR", "SmokeR"), includeNA = FALSE,
+                      test = TRUE, smd = TRUE), quote = FALSE, 
+    noSpaces = TRUE, printToggle = FALSE
+    
+  ), file = "data\\cvdSmoke.csv")
+write.csv(
+  print(
+    svyCreateTableOne(vars = c("BarrierMedR", "SmokeR"), strata = 'CRN', data = cvdht.samp14, 
+                      factorVars = c("BarrierMedR", "SmokeR"), includeNA = FALSE,
+                      test = TRUE, smd = TRUE), quote = FALSE, 
+    noSpaces = TRUE, printToggle = FALSE
+    
+  ), file = "data\\cvdhtSmoke.csv")
+#now things assessed for all participants: writing to CSVs
+write.csv(
+  print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
                            "RaceR", "InsType", "EduR", "IncomeR"), strata = 'CRN', data = diab.per14, 
                   factorVars = c("SEX", "REGION", "RaceR", "InsType", "EduR", "IncomeR"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE)
-svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
+                  test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), quote = FALSE, 
+      noSpaces = TRUE, printToggle = FALSE)
+, file = "data\\diabTab1.csv")
+ 
+write.csv( 
+print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
                            "RaceR", "InsType", "EduR", "IncomeR"), strata = 'CRN', data = cvd.per14, 
                   factorVars = c("SEX", "REGION", "RaceR", "InsType", "EduR", "IncomeR"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE)
-svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
+                  test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"),
+      quote = FALSE, noSpaces = TRUE, printToggle = FALSE)
+, file = "data\\cvdTab1.csv")
+
+write.csv(
+print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
                            "RaceR", "InsType", "EduR", "IncomeR"), strata = 'CRN', data = cvdht.per14, 
                   factorVars = c("SEX", "REGION", "RaceR", "InsType", "EduR", "IncomeR"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE)
+                  test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), quote = FALSE, 
+      noSpaces = TRUE, printToggle = FALSE)
+, file = "data\\cvdhtTab1.csv")
+
+
+write.csv(
+  print(svyCreateTableOne(vars = c("AGE"), strata = 'CRN', data = cvdht.per14, includeNA = FALSE,
+                          test = TRUE, smd = TRUE), nonnormal = c("AGE"))
+  , file = "data\\cvdhtTab1.csv")
 
 
 #BMI and Age (my only 2 continuous vars) are most likely not normally distributed
@@ -254,22 +301,6 @@ ggplot(data = diab.per14$variables, aes(x = AGE, group = CRN, fill = CRN), alpha
 ggplot(data = cvd.per14$variables, aes(x = AGE, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
 ggplot(data = cvdht.per14$variables, aes(x = AGE, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
 #age is definitely not normal: very left skewed
-
-
-bmi.diab <- svyCreateTableOne(vars = c("AGE","BMI"), strata = 'CRN', data = diab.per14,
-                  argsNonNormal = c("AGE", "BMI"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE)
-print(bmi.diab, minMax = T, nonnormal = c("AGE", "BMI"))
-
-bmi.cvd <- svyCreateTableOne(vars = c("AGE","BMI"), strata = 'CRN', data = cvd.per14,
-                              argsNonNormal = c("AGE", "BMI"), includeNA = FALSE,
-                              test = TRUE, smd = TRUE)
-print(bmi.cvd, minMax = T, nonnormal = c("AGE", "BMI"))
-
-bmi.cvdht <- svyCreateTableOne(vars = c("AGE","BMI"), strata = 'CRN', data = cvdht.per14,
-                             argsNonNormal = c("AGE", "BMI"), includeNA = FALSE,
-                             test = TRUE, smd = TRUE)
-print(bmi.cvdht, minMax = T, nonnormal = c("AGE", "BMI"))
 
 kruskal.test(x = cvdht.per14$variables$BMI, g = cvdht.per14$variables$CRN)
 kruskal.test(x = cvd.per14$variables$BMI, g = cvd.per14$variables$CRN)
