@@ -133,7 +133,9 @@ mort10sa.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeight
 mort5sa.Svy <- svydesign(ids = ~ PSU, strata = ~ STRATA, weights = ~ mortWeightSA10,
                           nest = TRUE, data = eligible[eligible$YEAR >=2010,])
 
-#only keep the sample adults
+#only keep the sample adults (those with a finite sampling probability. If they 
+#weren't included in supplement, they have an infinite sampling probability and don't
+#have data on questions we need)
 finprob <- (is.finite(mort14.Svy$prob))
 finprob10 <- (is.finite(mort10.Svy$prob))
 finprobsa <- (is.finite(mort14sa.Svy$prob))

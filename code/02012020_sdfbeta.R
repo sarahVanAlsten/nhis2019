@@ -617,7 +617,7 @@ table(data.cvd.mod2$influence.meas)
 #121 are influential on just 1 measure, 14 on 2, 11 on 3, 5 on 4, and 2 on 6
 
 possible.inf <- data.cvd.mod2[data.cvd.mod2$influence.meas >=1,]
-#write it out
+#write it out to csv
 write_csv(possible.inf, "data\\possible_inf_cvd_allcause.csv")
 
 table(possible.inf$CRN)
@@ -790,19 +790,3 @@ svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
 svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
          design = cvdht.not.inf.svy5) %>% summary() #doesn't really change things
 
-quantile(diab.mort14.fin.sa$variables$fuTime, na.rm =T)
-quantile(cvd.mort14.fin.sa$variables$fuTime, na.rm =T)
-quantile(cvdht.mort14.fin.sa$variables$fuTime, na.rm =T)
-
-quantile(diab.mort10.fin.sa$variables$fuTime, na.rm =T)
-quantile(cvd.mort10.fin.sa$variables$fuTime, na.rm =T)
-quantile(cvdht.mort10.fin.sa$variables$fuTime, na.rm =T)
-
-quantile(diab.mort5.fin.sa$variables$fuTime, na.rm =T)
-quantile(cvd.mort5.fin.sa$variables$fuTime, na.rm =T)
-quantile(cvdht.mort5.fin.sa$variables$fuTime, na.rm =T)
-
-
-quantile(diab.not.inf.svy$variables$fuTime, na.rm =T)
-quantile(cvd.not.inf.svy$variables$fuTime, na.rm =T)
-quantile(cvdht.not.inf.svy$variables$fuTime, na.rm =T)

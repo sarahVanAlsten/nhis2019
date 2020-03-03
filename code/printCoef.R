@@ -1,6 +1,5 @@
 #function to easily print out all coefs nicely
 
-
 printCoef <- function(mod){
   ti <- broom::tidy(mod, exponentiate = T, conf.int =T)
     writeLines(noquote(paste0(sprintf(round(ti$estimate, 3),fmt = "%.3f"), " (",
@@ -10,6 +9,9 @@ printCoef <- function(mod){
   
 }
 
+#print model coefficients
+
+#dz specific
 printCoef(mod2.diab.sa)
 printCoef(mod2.diab.sa.l)
 printCoef(mod2.early.diab)
@@ -20,6 +22,7 @@ printCoef(mod2.cvdht.sa)
 printCoef(mod2.cvdht.sa.l)
 printCoef(mod2.early.cvdht)
 
+#all cause
 printCoef(mod2.diab.allcause)
 printCoef(mod2.early.diab.allcause)
 printCoef(mod2.diab.sa.l.ac)
@@ -29,10 +32,3 @@ printCoef(mod2.cvd.sa.l.ac)
 printCoef(mod2.cvdht.allcause)
 printCoef(mod2.early.cvdht.allcause)
 printCoef(mod2.cvdht.sa.l.ac)
-
-
-mod2.diab.sa %>% broom::tidy() %>% select(term)
-t <- mod2.cvd.sa.l.ac %>% broom::tidy() %>% select(term) 
-
-
-summary(mod2.diab.sa.l)
