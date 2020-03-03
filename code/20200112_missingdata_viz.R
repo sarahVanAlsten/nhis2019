@@ -1,9 +1,10 @@
+####################################################
 #Author: Sarah Van Alsten
 #Date Created: January 12, 2020
 #Purpose: visualize the missing data for NHIS/CRN/Mortality Study
 #Last Update: January 12, 2020
-#Packages used: tidyverse, UpSetR
-###############################
+#Packages used: tidyverse, UpSetR, VIM
+###############################################################
 ##look at missing data patterns
 library(tidyverse)
 library(VIM)

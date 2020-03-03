@@ -34,9 +34,10 @@ library(tidyverse)
 # Data Management ---------------------------------------------------------
 
 
-#read in the data
+#read in the data: output from file 20190928_NHIS.R
 eligible <- read.csv("data\\eligible.csv")
 
+#create a CRN variable
 eligible <- eligible %>%
   mutate(CRN = ifelse(is.na(BarrierMedR) & YEAR <=2010, NA,
                       ifelse(is.na(BarrierMedR)& is.na(skipMed) & is.na(lessMed) &is.na(delayMed) & (YEAR >=2011), NA,
@@ -56,7 +57,7 @@ crnSum <- eligible %>%
             sum(crnSum ==4, na.rm = T)/16297)
 
 #the reason it's 15 and 11 is because 2000-2014 is actually 15 total cycles,
-#and 2000-2010 is 11 cycles!
+#and 2000-2010 is 11 cycles.. have to divide sampling weight by number of waves
 eligible<- eligible %>%
   mutate(sampWeight14 = SAMPWEIGHT / 15,
          sampWeight10 = SAMPWEIGHT / 11,
@@ -142,13 +143,11 @@ finprob10 <- (is.finite(mort10.Svy$prob))
 finprobsa <- (is.finite(mort14sa.Svy$prob))
 finprobsa10 <- (is.finite(mort10sa.Svy$prob))
 finprobsa5 <- (is.finite(mort5sa.Svy$prob))
-prop.table(table(finprob))
-prop.table(table(finprob10))
-prop.table(table(finprobsa))
-prop.table(table(finprobsa10))
 
+#attach it to the data frame
 eligible$finprob <- finprob
 
+#the years where specific CRN bx were asked
 eligible.mini <- eligible[eligible$YEAR < 2010,]
 eligible.mini$finprob10 <- finprob10
 
@@ -193,22 +192,13 @@ diab.mort5.fin.sa <- subset(mort5sa.Svy, DiabetesRec == 1  & finprobsa5 == TRUE)
 cvd.mort5.fin.sa <- subset(mort5sa.Svy, AnyCVD == 1 & finprobsa5 == TRUE)
 cvdht.mort5.fin.sa <- subset(mort5sa.Svy, AnyCVDHT == 1 & finprobsa5 == TRUE)
 
-###############################################################################
-#clean up environment to help things run faster
-#rm(eligible)
-#rm(per14.Svy)
-#rm(mort10.Svy)
-#rm(mort14.Svy)
-#rm(samp5.Svy)
-#rm(samp14.Svy)
-
-
 # Make Table One ----------------------------------------------------------
 
 
 ######################################################################################
 #now, get descriptive statistics
-#FIRST, for CRN bx assessed in late years
+#FIRST, for CRN bx assessed in late years, and write out the files to CSVs so
+#I can look at them more easily later
 write.csv(
   print(
 svyCreateTableOne(vars = c("skipMed", "delayMed", "lessMed"), strata = 'CRN', data = diab.samp5, 
@@ -313,11 +303,10 @@ kruskal.test(x = cvdht.per14$variables$AGE, g = cvdht.per14$variables$CRN)
 kruskal.test(x = cvd.per14$variables$AGE, g = cvd.per14$variables$CRN)
 kruskal.test(x = diab.per14$variables$AGE, g = diab.per14$variables$CRN)
 
-
+#look at nonsurvey weighted data to see NAs
 table(diab.mort14$variables$DzSpecificDiab_NoNA, diab.mort14$variables$CRN, useNA = "ifany")
 table(cvd.mort14$variables$DzSpecificCVD_NoNA, cvd.mort14$variables$CRN, useNA = "ifany")
 table(cvd.mort14$variables$DzSpecificCVD, cvd.mort14$variables$CRN, useNA = "ifany")
 table(cvdht.mort14$variables$DzSpecificCVDHT, cvdht.mort14$variables$CRN, useNA = "ifany")
 table(cvd.mort14$variables$DzSpecificCVDHT_NoNA, cvd.mort14$variables$CRN, useNA = "ifany")
-
 table(diab.mort14$variables$DEAD, diab.mort14$variables$CRN, useNA = "ifany")

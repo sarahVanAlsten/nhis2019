@@ -1,11 +1,15 @@
 ##################################################################
 #Sarah Van Alsten
 #Created: Dec 16, 2019
-#check assumptions of coxph : proportional hazards
+#check assumptions of coxph : proportional hazards and interactions btwn
+#interview wave year see if estimates of CRN differ by wave.
+#Use data/design created in 20190928_NHIS.R and 20191213_table1_analysis.R to get
+#appropriate data to run models
 #Packages used: survey, survminer, survival
 #Last Update: Feb 1, 2019
 ################################################################################
 library(survminer)
+
 diab.strat <- coxph(formula = Surv(fuTime, diabMort)~factor(CRN)*factor(yearStrat) ,
                     data = diab.mort14.fin.sa$variables)
 summary(diab.strat)

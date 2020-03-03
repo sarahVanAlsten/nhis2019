@@ -2,6 +2,8 @@
 #Sarah Van Alsten
 #Created: Feb 1, 2019
 #check assumptions of coxph :influence via sdfbeta
+#Use data/design from 20190928_NHIS.R and 20191213_table1_analysis.R
+#and models from 20200112_coxph_withRace.R before testing assumptions
 #Packages used: survey, survminer, survival
 #Last Update: Feb 1, 2019
 ################################################################################

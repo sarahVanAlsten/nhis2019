@@ -1,22 +1,24 @@
 ##################################################################
 #Sarah Van Alsten
 #Created: September 28, 2019
-#Read in the NHIS file from IPUMS and start browsing
-#Packages used: ipumsr, tidyverse, tableone, survival, survey
-#Last Update: Dec 10, 2019
+#Read in the NHIS file from IPUMS and do recoding of variables.
+#Data come from https://nhis.ipums.org/nhis-action/variables/group but
+#you have to preselect variables before you can download data. The set
+#that I downloaded is also in the github repo under data folder.
+#Packages used: ipumsr, tidyverse, tableone, crunch
+#Last Update: March 3, 2019
 #####################################################################
 #read in the IPUMS data 
 # NOTE: To load data, you must download both the extract's data and the DDI
 # and also set the working directory to the folder with these files (or change the path below).
 
-#if (!require("ipumsr")) stop("Reading IPUMS data into R requires the ipumsr package. It can be installed using the following command: install.packages('ipumsr')")
-# # the location where the .DAT file is saved:
-
+#open packges
 library(ipumsr)
 library(tidyverse)
 library(tableone)
 library(crunch)
-ddi <- read_ipums_ddi("C:\\Users\\Owner\\OneDrive\\Documents\\Fall_2019\\Capstone\\nhis2019\\data\\nhis_00010.xml")
+
+ddi <- read_ipums_ddi("data\\nhis_00010.xml")
 data <- read_ipums_micro(ddi)
 names(data)
 
@@ -51,64 +53,18 @@ options(ipumsr.show_pillar_labels = FALSE)
 subData<- as.data.frame(subData)
 subData[] <- lapply(subData, unclass)
 
+#clear up environment to run faster
 rm(data)
 rm(ddi)
-#eligible <- subData[as.integer(subData$MORTELIG) !=2,] #1= eligible, 2 = under 18, 3= ineligible, will have to weight for eligibility
 eligible <- subData
 
-#diabetes mortality
-eligible %>%
-  group_by(YEAR)%>%
-  group_by(MORTDIAB)%>%
-  summarise(n = n()) #1 = no, 2 = yes, 9 = niu
-
-#cancer by type and by year
-cancer_Type_Year <- eligible %>%
-  group_by(YEAR)%>%
-  summarise(Breast = sum(CNBRES==2),
-            Uterine = sum(CNUTER==2),
-            Thyroid = sum(CNTHYR==2),
-            ThroatPharynx = sum(CNTHRO==2),
-            Testicular = sum(CNTEST==2),
-            Stomach = sum(CNSTOM==2),
-            SoftTissue = sum(CNSOFT==2),
-            SkinUnknown = sum(CNSKDK==2),
-            SkinNonMelanoma = sum(CNSKNM==2),
-            SkinMelanoma = sum(CNMELN==2),
-            Rectal = sum(CNRECT==2),
-            Colon =sum(CNCOLN==2),
-            Kidney = sum(CNKIDN==2),
-            Prostate = sum(CNPROS==2),
-            Gallbladder = sum(CNGALL==2),
-            Pancreas = sum(CNPANC==2),
-            Ovarian = sum(CNOVAR==2),
-            MouthLipTongue = sum(CNMOTH==2),
-            Lymphoma = sum(CNLYMP==2),
-            Lung = sum(CNLUNG==2),
-            Leukemia = sum(CNLEUK==2),
-            Liver =sum(CNLIVR==2),
-            Larynx = sum(CNLARX==2),
-            Esophagus = sum(CNESOP==2),
-            Cervix = sum(CNCERV==2),
-            Bone = sum(CNBONE==2),
-            Brain = sum(CNBRAN==2),
-            Blood = sum(CNBLOD==2),
-            Bladder = sum(CNBLAD==2),
-            Other = sum(CNOTHR==2),
-            TotalPeople = n())
-cancer_Type_Year$TotalCancer <- rowSums(cancer_Type_Year[,1:31])
-
+#recode chronic conditions
 eligible <- eligible %>%
   mutate(DiabetesRec = ifelse(DIABETICEV == 2, 1,
                                ifelse(DIABETICEV %in% c(0,7,8,9), NA, 0))) #Recode Diabetes Ever to Binary Variable
 eligible <- eligible %>%
   mutate(DiabetesRec2 = ifelse(DIABETICEV %in% c(2,3), 1,
                               ifelse(DIABETICEV %in% c(0,7,8,9), NA, 0))) #Recode Diabetes Ever to Binary Variable, where borderline = TRUE
-#current asthma
-eligible <- eligible %>%
-  mutate(Asthma = ifelse(ASTHMASTIL ==2, 1,
-                               ifelse(ASTHMASTIL %in% c(0,7,8,9), NA, 0))) #Recode Diabetes Ever to Binary Variable, where borderline = TRUE
-
 #ever had heart condition/dz
 eligible <- eligible %>% 
   mutate(HeartDz = ifelse(HEARTCONEV ==2, 1,
@@ -131,35 +87,12 @@ eligible <- eligible %>%
   mutate(HeartAtt = ifelse(HEARTATTEV ==2, 1,
                            ifelse(HEARTATTEV %in% c(0,7,8,9), NA, 0)))
 
-#cystic fibrosis
-eligible <- eligible %>%
-  mutate(CysFib = ifelse(CYSTICFIEV ==2, 1,
-                           ifelse(CYSTICFIEV %in% c(0,7,8,9), NA, 0)))
 
-#hepatitis
-eligible <- eligible %>%
-  mutate(Hep = ifelse(HEPATEV ==2, 1,
-                         ifelse(HEPATEV %in% c(0,7,8,9), NA, 0)))
-
-#liver condition (yr)
-eligible <- eligible %>%
-  mutate(LivCon = ifelse(LIVERCONYR ==2, 1,
-                      ifelse(LIVERCONYR %in% c(0,7,8,9), NA, 0)))
-
-#Liver Chronic
-eligible <- eligible %>%
-  mutate(ChLiv= ifelse(LIVERCHRON ==2, 1,
-                         ifelse(LIVERCHRON %in% c(0,7,8,9), NA, 0)))
-
-#stroke (yr)
+#stroke (past yr)
 eligible <- eligible %>%
   mutate(Stroke= ifelse(STROKEYR ==2, 1,
                          ifelse(STROKEYR %in% c(0,7,8,9), NA, 0)))
 
-#Stroke Ever
-eligible <- eligible %>%
-  mutate(StrokeYr= ifelse(STROKEYR ==2, 1,
-                        ifelse(STROKEYR %in% c(0,7,8,9), NA, 0)))
 
 #Stroke Ever
 eligible <- eligible %>%
@@ -176,6 +109,7 @@ table(eligible$MORTSTAT)
 eligible$DEAD <- ifelse(eligible$MORTSTAT == 1, 1, 
                         ifelse(eligible$MORTSTAT == 2, 0, NA))
 
+#basic summaries of N's
 eligible %>%
   group_by(YEAR)%>%
   summarise(sum(HeartDz==1, na.rm = T),
@@ -196,14 +130,6 @@ eligible %>%
             Dead = sum(HyperTen==1&DEAD==1, na.rm=T),
             NoDM =sum(HyperTen==0, na.rm = T),
             NoDMDead = sum(HyperTen==0 &DEAD==1, na.rm = T))
-
-
-eligible %>%
-  group_by(YEAR)%>%
-  summarise(sum(Asthma==1, na.rm = T),
-            Dead = sum(Asthma==1&DEAD==1, na.rm=T),
-            NoAs =sum(Asthma==0, na.rm = T),
-            NoAsDead = sum(Asthma==0 &DEAD==1, na.rm = T))
 
 
 eligible %>%
@@ -267,7 +193,7 @@ eligible <- eligible %>%
   mutate(PovertyRec = ifelse(POVIMP5 > 14, NA,POVIMP5)) %>%
   mutate(PovertyBinaryY = ifelse(POVIMP5 < 4, 1, 0))
 
-#recode BMI category
+#recode BMI 
 eligible <- eligible %>% 
   mutate(BMI = ifelse(BMICALC %in% c(0,996), NA, BMICALC))
 
@@ -276,7 +202,6 @@ eligible <- eligible %>%
   mutate(CancerEvBin = ifelse(CANCEREV ==2, 1,
                               ifelse(CANCEREV == 1, 0, NA)))
 
-ggplot(eligible, aes(x = BMI))+ geom_density()
 
 #recode delayed medical care due to cost, and other reasons
 eligible <- eligible %>%
@@ -319,6 +244,7 @@ CreateCatTable(vars = c("DELAYCOSTR", "DELAYHRSR", "DELAYPHONER", "DELARYTRANSR"
                strata = "DiabetesRec",
                data = eligible,
                includeNA = F)
+
 CreateCatTable(vars = c("DELAYCOSTR", "DELAYHRSR", "DELAYPHONER", "DELARYTRANSR","DELAYAPPTR",
                         "DELAYWAITR", "BarrierCareR", "BarrierMedR", "BarrierFUR",
                         "BarrierSpecR", "BarrierMHR"),
@@ -333,10 +259,6 @@ CreateCatTable(vars = c("DELAYCOSTR", "DELAYHRSR", "DELAYPHONER", "DELARYTRANSR"
                strata = "CancerEvBin",
                data = eligible,
                includeNA = TRUE)
-
-#table(eligible$CancerEvBin, eligible$DiabetesRec2)
-#odds ratio of having cancer if diabetic
-#(6506*378097)/(38532*29668)
 
 #including the borderline diabetics
 CreateCatTable(vars = c("DELAYCOSTR", "DELAYHRSR", "DELAYPHONER", "DELAYAPPTR",
@@ -519,8 +441,7 @@ eligible %>%
             foreign = sum(foreignMed==1, na.rm = T),
             alternate = sum(alternateMed==1, na.rm = T))
 
-#create variable for any cost related barrier to care
-#DELAYCOSTR BarrierCareR BarrierMedR BarrierFUR BarrierSpecR (BarrierMHR)
+#summarise cost related barrier to care
 eligible %>%
   group_by(YEAR)%>%
   summarise(delayCost = sum(DELAYCOSTR ==1, na.rm =T),
@@ -913,14 +834,14 @@ CreateCatTable(vars = "SmokeR", strata = "HeartAtt", data = eligible)
 CreateCatTable(vars = "SmokeR", strata = "AngPec", data = eligible)
 CreateCatTable(vars = "SmokeR", strata = "Stroke", data = eligible)
 ########################################################
-
+#deaths by diabetes status
 eligible %>%
   group_by(YEAR)%>%
   summarise(DiabDied = sum(DiabetesRec ==1&DEAD==1, na.rm = T),
             DiabDiedDM = sum(DiabetesRec==1 & MORTDIAB==1, na.rm = T),
             NoDMDead =  sum(DiabetesRec==0 & MORTDIAB==1, na.rm = T))
 
-
+#diabetes not in use
 eligible$diabNIU <- ifelse(eligible$DIABETICEV==0, 1,NA)
 table(eligible$diabNIU, eligible$YEAR)
 table(eligible$DiabetesRec, eligible$YEAR)
@@ -1013,10 +934,9 @@ eligible$AnyCVDHT <- ifelse(eligible$AnyCVD==1 | eligible$HyperTen==1, 1,
 
 
 #above was LEADING cause of death: now do if it was listed as a cause (not necessarily leading)
-table(eligible$MORTUCOD)
+#table(eligible$MORTUCOD)
 #046 = Diabetes, 056 = hypertensive dz, 057 = hypertensive heart, renal, 059 - 075 = cardio diagnoses
 #100 = renal failure
-
 eligible <- eligible %>%
   mutate(DzSpecificDiab = ifelse(MORTUCOD == 46 | MORTUCODLD == 7 | MORTDIAB == 2, 1,
                                  ifelse(DEAD == 1, 0 , NA))) %>%
@@ -1031,6 +951,7 @@ eligible <- eligible %>%
                                        ifelse(MORTUCODLD == 1 | MORTUCODLD == 5, 1, 0)))
 
 
+#how many people died of diabetes by each year
 eligible%>% group_by(YEAR)%>%summarise(mean(MORTDIAB, na.rm = T))
 
 write.csv(eligible, "C:\\Users\\Owner\\OneDrive\\Documents\\Fall_2019\\Capstone\\nhis2019\\data\\eligible.csv")

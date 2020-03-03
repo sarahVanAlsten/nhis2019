@@ -1,7 +1,7 @@
 #########################
 # Sarah Van Alsten
 # Feb 6, 2020
-# Compare influential cases (statistically) to non-influential
+# Compare influential cases (statistically) to non-influential ones
 #######################
 library(tidyverse)
 library(tableone)

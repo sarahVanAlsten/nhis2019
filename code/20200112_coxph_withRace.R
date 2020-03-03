@@ -2,14 +2,18 @@
 #Sarah Van Alsten
 #Created: Jan 12, 2019
 #Use the cleaned data from 20190928_NHIS.R to create cox regressions for table 2
+#use survey design created in 20191213_table1_analysis.R to set up for survey
+#adjusted weights
 #Packages used: ipumsr, tidyverse, tableone, survival, survey
-#Last Update: Jan 12, 2020
+#Last Update: March 3, 2020
 ################################################################################
 library(survey)
 library(tidyverse)
-#first create an empty table to hold the results
+
+#first create an empty table to hold the results so it's easier to look at later
 result.data <- data.frame(matrix(ncol=7, nrow=0,
-                                 dimnames=list(NULL, c("years", "dz", "model", "outcome", "est", "lower", "upper"))))
+                                 dimnames=list(NULL, c("years", "dz", "model", "outcome",
+                                                       "est", "lower", "upper"))))
 
 ########################################################################################
 #svycoxph and survival to run the regressions
@@ -24,7 +28,8 @@ mod1.diab.sa <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN),
 summary(mod1.diab.sa)
 
 #write function to more easily add results to result.data
-#mod = the model, yrs = modelled years, dz = condition, model = adj or unadj, outcome = dz spec or all cause
+#mod = the model, yrs = modelled years, dz = condition, model = adj or unadj,
+#outcome = dz spec or all cause
 addResult <- function(mod, years, dz, model, outcome){
   
 
@@ -113,7 +118,7 @@ summary(mod2.cvdht.sa)
 result.data <- rbind(result.data, addResult(mod2.cvdht.sa, "2000 - 2014", "cvdht", "adjusted", "dz specific"))
 
 ####################################################################################
-#get follow up times
+#get follow up times/IQR
 svyquantile(~fuTime, design = diab.mort14.fin.sa, quantiles = .5, na.rm = T)
 svyquantile(~fuTime, design = diab.mort14.fin.sa, quantiles = .25, na.rm = T)
 svyquantile(~fuTime, design = diab.mort14.fin.sa, quantiles = .75, na.rm = T)
@@ -507,6 +512,7 @@ result.data <- rbind(result.data, addResult(mod2.cvdht.sa.l.ac, "2011 - 2014", "
 result.data[17, "model"] <- "adjusted"
 result.data[18, "model"] <- "adjusted"
 
+#filter to relevant models ie adjusted/not and what years they came from
 all.adj.dz <- result.data %>%
   filter(years == "2000 - 2014" & model == "adjusted" & outcome == "dz specific")
 
@@ -537,7 +543,7 @@ myPrintFx <- function(data){
   }
 }
 
-#print out for the models
+#print out results for the models
 myPrintFx(all.adj.dz)
 myPrintFx(all.adj.ac)
 myPrintFx(early.adj.dz)

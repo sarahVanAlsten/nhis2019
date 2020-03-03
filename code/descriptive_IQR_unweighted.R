@@ -1,5 +1,7 @@
 #Sarah Van Alsten
+#Created: Dec 10, 2019
 #get IQRs for age and BMI for descriptives for table one
+#by CRN status
 ##########################################################################
 
 IQR(cvd.mort14.fin.sa$variables[which(cvdht.mort14.fin.sa$variables$CRN == 0), "AGE"], na.rm =T)

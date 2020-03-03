@@ -1,3 +1,11 @@
+##################################################################
+#Sarah Van Alsten
+#Created: Feb 20, 2020
+#Make dags to figure out what to adjust for
+#Packages used: DiagrammeR
+#Last Update: Feb 28, 2019
+################################################################################
+
 library(DiagrammeR)
 
 
