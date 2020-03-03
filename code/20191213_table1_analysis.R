@@ -3,7 +3,7 @@
 #Created: Dec 13, 2019
 #Use the cleaned data from 20190928_NHIS.R to create table 1 (descriptive stats)
 #Packages used: ipumsr, tidyverse, tableone, survival, survey
-#Last Update: Dec 13, 2019
+#Last Update: March 3, 2020
 ################################################################################
 #first, create the survey design for the study, using the appropriate
 #weight variables. 'PERWEIGHT' is for variables asked of everyone, whereas
@@ -12,9 +12,10 @@
 #for eligibility issues with those not provding enough data for linkage.
 #'STRATA' represents sampling stratum, 'PSU' represent primary sampling unit
 #For pooled analyses, divide WT by number of included years. 
-#I also will need to use subpop option because I am choosing select participants
-#(eg with diabetes, CVD...). Might need to go back and undo the exluding those
-#who were initially ineligible bc that might have cuased the issues with infite probability
+#Choose only those with finite sampling probability, which here is equivalent to
+#using subpop options for those who completed the sample adult interview, which
+#included questions about chronic dz (ie if sampling prob is not finite, then that
+#indicates ineligibility)
 ##################################################################################
 #YBARMEDS is in access to care supplement, so it should have SAMPWEIGHT.
 #CRN (the 3 item responses) also asked of SAMPLE adults so should use SAMPWEIGHT
