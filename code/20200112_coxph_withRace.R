@@ -5,7 +5,7 @@
 #use survey design created in 20191213_table1_analysis.R to set up for survey
 #adjusted weights
 #Packages used: ipumsr, tidyverse, tableone, survival, survey
-#Last Update: March 3, 2020
+#Last Update: July 7, 2020
 ################################################################################
 library(survey)
 library(tidyverse)
@@ -86,36 +86,71 @@ result.data <- rbind(result.data, addResult(mod1.cvdht.sa, "2000 - 2014", "cvdht
 cvdht_mort_n <- mod1.cvdht.sa$nevent
 cvdht_mort_perc <- mod1.cvdht.sa$nevent / mod1.cvdht.sa$n
 
+
+#############################################################################
+#just HT
+ht.mort14.fin.sa <- update(ht.mort14.fin.sa, htMort = ifelse(DEAD == 0, 0,
+                                                             ifelse(MORTHYPR == 2, 1,
+                                                                    ifelse(MORTHYPR == 1, 0, NA))))
+
+
+mod1.ht.sa <- svycoxph(formula = Surv(fuTime, htMort)~factor(CRN),
+                          design = ht.mort14.fin.sa)
+
+summary(mod1.ht.sa)
+
+result.data <- rbind(result.data, addResult(mod1.ht.sa, "2000 - 2014", "ht", "unadjusted", "dz specific"))
+
+#to get N(%)
+ht_mort_n <- mod1.ht.sa$nevent
+ht_mort_perc <- mod1.ht.sa$nevent / mod1.ht.sa$n
+
 ###################################################################################
 #now do adjusted models: for sex, age, insurance, income, education, race 
 #(BMI, Smoking per dag shouldn't be adjusted)
 
 #Diabetes
 mod2.diab.sa <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR)+ AGE +
-                           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
+                           factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + factor(CancerEvBin) +
+                           factor(AnyCVDHT),
                          design = diab.mort14.fin.sa)
 
 summary(mod2.diab.sa)
+cox.zph(mod2.diab.sa)
 result.data <- rbind(result.data, addResult(mod2.diab.sa, "2000 - 2014", "diabetes", "adjusted", "dz specific"))
 
 
 ###########################################################################
 #CVD
 mod2.cvd.sa <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN) + factor(EduR)+ AGE +
-                          factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
+                          factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + factor(DiabetesRec) +
+                          factor(CancerEvBin) + factor(HyperTen),
                         design = cvd.mort14.fin.sa)
 
 summary(mod2.cvd.sa)
+cox.zph(mod2.cvd.sa)
 result.data <- rbind(result.data, addResult(mod2.cvd.sa, "2000 - 2014", "cvd", "adjusted", "dz specific"))
 
 ###############################################################################
 #CVD plus hypertension
 mod2.cvdht.sa <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
-                            factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
+                            factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+                            factor(CancerEvBin) + factor(DiabetesRec),
                           design = cvdht.mort14.fin.sa)
 
 summary(mod2.cvdht.sa)
 result.data <- rbind(result.data, addResult(mod2.cvdht.sa, "2000 - 2014", "cvdht", "adjusted", "dz specific"))
+
+####################################################################################
+#hypertension
+mod2.ht.sa <- svycoxph(formula = Surv(fuTime, htMort)~factor(CRN) + factor(EduR)+ AGE +
+                            factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+                            factor(CancerEvBin) + factor(DiabetesRec) + factor(AnyCVD),
+                          design = ht.mort14.fin.sa)
+
+summary(mod2.ht.sa)
+cox.zph(mod2.ht.sa)
+result.data <- rbind(result.data, addResult(mod2.ht.sa, "2000 - 2014", "ht", "adjusted", "dz specific"))
 
 ####################################################################################
 #get follow up times/IQR
@@ -130,6 +165,10 @@ svyquantile(~fuTime, design = cvd.mort14.fin.sa, quantiles = .75, na.rm = T)
 svyquantile(~fuTime, design = cvdht.mort14.fin.sa, quantiles = .5, na.rm = T)
 svyquantile(~fuTime, design = cvdht.mort14.fin.sa, quantiles = .25, na.rm = T)
 svyquantile(~fuTime, design = cvdht.mort14.fin.sa, quantiles = .75, na.rm = T)
+
+svyquantile(~fuTime, design = ht.mort14.fin.sa, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = ht.mort14.fin.sa, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = ht.mort14.fin.sa, quantiles = .75, na.rm = T)
 
 
 # All Cause ---------------------------------------------------------------
@@ -169,6 +208,21 @@ summary(mod1.cvdht.sa)
 
 
 result.data <- rbind(result.data, addResult(mod1.cvdht.allcause, "2000 - 2014", "cvdht", "unadjusted", "allcause"))
+
+###############################################################################
+
+mod1.ht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                                design = ht.mort14.fin.sa)
+
+summary(mod1.ht.allcause)
+#to get N(%)
+htAC_mort_n <- mod1.ht.allcause$nevent
+htAC_mort_perc <- mod1.ht.allcause$nevent / mod1.ht.allcause$n
+
+summary(mod1.ht.sa)
+
+
+result.data <- rbind(result.data, addResult(mod1.ht.allcause, "2000 - 2014", "ht", "unadjusted", "allcause"))
 ##############################################################################
 
 #Adjusted all cause mortality models
@@ -179,6 +233,7 @@ mod2.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) 
                      design = diab.mort14.fin)
 
 summary(mod2.diab.allcause)
+cox.zph(mod2.diab.allcause, terms = F)
 result.data <- rbind(result.data, addResult(mod2.diab.allcause, "2000 - 2014", "diabetes", "adjusted", "allcause"))
 ##############################################################################
 
@@ -189,6 +244,7 @@ mod2.cvd.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) +
                               design = cvd.mort14.fin.sa)
 
 summary(mod2.cvd.allcause)
+cox.zph(mod2.cvd.allcause, terms = F)
 result.data <- rbind(result.data, addResult(mod2.cvd.allcause, "2000 - 2014", "cvd", "adjusted", "allcause"))
 ###############################################################################
 
@@ -199,7 +255,20 @@ mod2.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)
                                 design = cvdht.mort14.fin.sa)
 
 summary(mod2.cvdht.allcause)
+cox.zph(mod2.cvdht.allcause)
 result.data <- rbind(result.data, addResult(mod2.cvdht.allcause, "2000 - 2014", "cvdht", "adjusted", "allcause"))
+#########################################################################
+#CVD plus hypertension
+mod2.ht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                  factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+                                  factor(DiabetesRec) + factor(CancerEvBin) + factor(AnyCVD),
+                                design = ht.mort14.fin.sa)
+
+summary(mod2.ht.allcause)
+
+
+ggcoxzph(cox.zph(mod2.ht.allcause, terms=F), var = "AGE")
+result.data <- rbind(result.data, addResult(mod2.ht.allcause, "2000 - 2014", "ht", "adjusted", "allcause"))
 
 ##############################################################
 #get follow up times
@@ -214,6 +283,11 @@ svyquantile(~fuTime, design = cvd.mort14.fin, quantiles = .75, na.rm = T)
 svyquantile(~fuTime, design = cvdht.mort14.fin, quantiles = .5, na.rm = T)
 svyquantile(~fuTime, design = cvdht.mort14.fin, quantiles = .25, na.rm = T)
 svyquantile(~fuTime, design = cvdht.mort14.fin, quantiles = .75, na.rm = T)
+
+
+svyquantile(~fuTime, design = ht.mort14.fin, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = ht.mort14.fin, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = ht.mort14.fin, quantiles = .75, na.rm = T)
 
 
 #####################################################################################
@@ -286,21 +360,38 @@ mod1.early.cvdht$nevent
 mod1.early.cvdht$nevent / mod1.early.cvdht$n
 result.data <- rbind(result.data, addResult(mod1.early.cvdht, "2000 - 2010", "cvdht", "unadjusted", "dz specific"))
 
+#################################################################################
+ht.mort10.fin.sa <- update(ht.mort10.fin.sa, htMort = ifelse(DEAD == 0, 0,
+                                                             ifelse(MORTHYPR == 2, 1,
+                                                                    ifelse(MORTHYPR == 1, 0, NA))))
+
+mod1.early.ht <- svycoxph(formula = Surv(fuTime, htMort)~factor(CRN),
+                             design = ht.mort10.fin.sa)
+
+summary(mod1.early.ht)
+#to get N(%)
+mod1.early.ht$nevent
+mod1.early.ht$nevent / mod1.early.ht$n
+result.data <- rbind(result.data, addResult(mod1.early.ht, "2000 - 2010", "ht", "unadjusted", "dz specific"))
+
 ###################################################################################
 #now do adjusted models: for sex, age, insurance, income, education, race 
 #(BMI, Smoking per dag shouldn't be adjusted)
 
 #Diabetes
 mod2.early.diab <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN) + factor(EduR)+ AGE +
-                              factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
+                              factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + factor(CancerEvBin)+
+                            factor(AnyCVDHT),
                             design = diab.mort10.fin.sa)
 
 summary(mod2.early.diab)
+cox.zph(mod2.early.diab)
 result.data <- rbind(result.data, addResult(mod2.early.diab, "2000 - 2010", "diabetes", "adjusted", "dz specific"))
 ###############################################################################
 #CVD
 mod2.early.cvd <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN) + factor(EduR)+ AGE +
-                             factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
+                             factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + 
+                             factor(DiabetesRec)+ factor(CancerEvBin)+ factor(HyperTen),
                            design = cvd.mort10.fin.sa)
 
 summary(mod2.early.cvd)
@@ -309,11 +400,22 @@ result.data <- rbind(result.data, addResult(mod2.early.cvd, "2000 - 2010", "cvd"
 #############################################################################
 #CVD plus hypertension
 mod2.early.cvdht <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN) + factor(EduR)+ AGE +
-                               factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
+                               factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + factor(CancerEvBin)+
+                               factor(DiabetesRec),
                              design = cvdht.mort10.fin.sa)
 
 summary(mod2.early.cvdht)
 result.data <- rbind(result.data, addResult(mod2.early.cvdht, "2000 - 2010", "cvdht", "unadjusted", "dz specific"))
+##############################################################
+#ht
+mod2.early.ht <- svycoxph(formula = Surv(fuTime, htMort)~factor(CRN) + factor(EduR)+ AGE +
+                               factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + factor(CancerEvBin)+
+                               factor(DiabetesRec) + factor(AnyCVD),
+                             design = ht.mort10.fin.sa)
+
+
+summary(mod2.early.ht)
+result.data <- rbind(result.data, addResult(mod2.early.ht, "2000 - 2010", "ht", "unadjusted", "dz specific"))
 
 #get follow up times
 svyquantile(~fuTime, design = diab.mort10.fin.sa, quantiles = .5, na.rm = T)
@@ -328,6 +430,13 @@ svyquantile(~fuTime, design = cvdht.mort10.fin.sa, quantiles = .5, na.rm = T)
 svyquantile(~fuTime, design = cvdht.mort10.fin.sa, quantiles = .25, na.rm = T)
 svyquantile(~fuTime, design = cvdht.mort10.fin.sa, quantiles = .75, na.rm = T)
 
+svyquantile(~fuTime, design = ht.mort10.fin.sa, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = ht.mort10.fin.sa, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = ht.mort10.fin.sa, quantiles = .75, na.rm = T)
+
+svyquantile(~fuTime, design = ht.mort5.fin.sa, quantiles = .5, na.rm = T)
+svyquantile(~fuTime, design = ht.mort5.fin.sa, quantiles = .25, na.rm = T)
+svyquantile(~fuTime, design = ht.mort5.fin.sa, quantiles = .75, na.rm = T)
 
 # Early All Cause ---------------------------------------------------------
 
@@ -363,6 +472,16 @@ mod1.early.cvdht.allcause$nevent
 mod1.early.cvdht.allcause$nevent / mod1.early.cvdht.allcause$n
 result.data <- rbind(result.data, addResult(mod1.early.cvdht.allcause, "2000 - 2010", "cvdht", "unadjusted", "allcause"))
 
+#####################################################################################
+mod1.early.ht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                                      design = ht.mort10.fin.sa)
+
+summary(mod1.early.ht.allcause)
+#to get N(%)
+mod1.early.ht.allcause$nevent
+mod1.early.ht.allcause$nevent / mod1.early.ht.allcause$n
+result.data <- rbind(result.data, addResult(mod1.early.ht.allcause, "2000 - 2010", "cvdht", "unadjusted", "allcause"))
+
 ###################################################################################
 #now do adjusted models: for sex, age, insurance, income, education, race, chronic cond 
 #(BMI, Smoking per dag shouldn't be adjusted)
@@ -375,6 +494,7 @@ mod2.early.diab.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor
 
 
 summary(mod2.early.diab.allcause)
+cox.zph(mod2.early.diab.allcause)
 result.data <- rbind(result.data, addResult(mod2.early.diab.allcause, "2000 - 2010", "diab", "adjusted", "allcause"))
 ##################################################################################
 
@@ -396,6 +516,17 @@ mod2.early.cvdht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~facto
 
 summary(mod2.early.cvdht.allcause)
 result.data <- rbind(result.data, addResult(mod2.early.cvdht.allcause, "2000 - 2010", "cvdht", "adjusted", "allcause"))
+
+#################################################################################
+#hypertension
+mod2.early.ht.allcause <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN) + factor(EduR)+ AGE +
+                                        factor(IncomeR) + factor(SEX) + factor(InsType)+ factor(RaceR) +
+                                        factor(DiabetesRec) + factor(CancerEvBin)+ factor(AnyCVD),
+                                      design = ht.mort10.fin.sa)
+
+summary(mod2.early.ht.allcause)
+result.data <- rbind(result.data, addResult(mod2.early.ht.allcause, "2000 - 2010", "ht", "adjusted", "allcause"))
+
 
 ################################################################
 #finally do the LATE years (2011 - 2014)
@@ -429,27 +560,51 @@ mod1.cvdht.sa.l$n
 mod1.cvdht.sa.l$nevent/ mod1.cvdht.sa.l$n
 
 #############################################################
+ht.mort5.fin.sa <- update(ht.mort5.fin.sa, htMort = ifelse(DEAD == 0, 0,
+                                                             ifelse(MORTHYPR == 2, 1,
+                                                                    ifelse(MORTHYPR == 1, 0, NA))))
+
+mod1.ht.sa.l <- svycoxph(formula = Surv(fuTime, htMort)~factor(CRN),
+                            design = ht.mort5.fin.sa)
+summary(mod1.ht.sa.l)
+result.data <- rbind(result.data, addResult(mod1.ht.sa.l, "2011 - 2014", "ht", "unadjusted", "dz specific"))
+
+mod1.ht.sa.l$n
+mod1.ht.sa.l$nevent/ mod1.ht.sa.l$n
+
+#############################################################
 #adjusted model
 
 mod2.diab.sa.l <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN)+ factor(EduR)+ AGE +
-                                   factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
+                                   factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+                             factor(CancerEvBin) + factor(AnyCVDHT),
                                  design = diab.mort5.fin.sa)
 summary(mod2.diab.sa.l)
 result.data <- rbind(result.data, addResult(mod2.diab.sa.l, "2011 - 2014", "diabetes", "adjusted", "dz specific"))
 
 ########################################################################
 mod2.cvd.sa.l <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN)+ factor(EduR)+ AGE +
-                                  factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR),
+                                  factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + factor(DiabetesRec)+
+                            factor(CancerEvBin) + factor(HyperTen),
                                 design = cvd.mort5.fin.sa)
 summary(mod2.cvd.sa.l)
 result.data <- rbind(result.data, addResult(mod2.cvd.sa.l, "2011 - 2014", "cvd", "adjusted", "dz specific"))
 #########################################################################
 
 mod2.cvdht.sa.l <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN)+ factor(EduR)+ AGE +
-                                    factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) ,
+                                    factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+                              factor(CancerEvBin) + factor(DiabetesRec),
                                   design = cvdht.mort5.fin.sa)
 summary(mod2.cvdht.sa.l)
 result.data <- rbind(result.data, addResult(mod2.cvdht.sa.l, "2011 - 2014", "cvdht", "adjusted", "dz specific"))
+#########################################################################
+
+mod2.ht.sa.l <- svycoxph(formula = Surv(fuTime, htMort)~factor(CRN)+ factor(EduR)+ AGE +
+                              factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) +
+                              factor(CancerEvBin) + factor(DiabetesRec) + factor(AnyCVD),
+                            design = ht.mort5.fin.sa)
+summary(mod2.ht.sa.l)
+result.data <- rbind(result.data, addResult(mod2.ht.sa.l, "2011 - 2014", "ht", "adjusted", "dz specific"))
 
 ######################################################################################
 #for later years with all cause models
@@ -483,6 +638,15 @@ mod1.cvdht.sa.l.ac$nevent
 mod1.cvdht.sa.l.ac$nevent/ mod1.cvdht.sa.l.ac$n
 
 #############################################################
+mod1.ht.sa.l.ac <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN),
+                               design = ht.mort5.fin.sa)
+summary(mod1.ht.sa.l.ac)
+result.data <- rbind(result.data, addResult(mod1.ht.sa.l.ac, "2011 - 2014", "ht", "unadjusted", "allcause"))
+
+mod1.ht.sa.l.ac$nevent
+mod1.ht.sa.l.ac$nevent/ mod1.ht.sa.l.ac$n
+
+#############################################################
 #adjusted model
 
 mod2.diab.sa.l.ac <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)+ factor(EduR)+ AGE +
@@ -503,10 +667,18 @@ result.data <- rbind(result.data, addResult(mod2.cvd.sa.l.ac, "2011 - 2014", "cv
 
 mod2.cvdht.sa.l.ac <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)+ factor(EduR)+ AGE +
                               factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR)+
-                                factor(DiabetesRec) + factor(CancerEvBin),
+                                factor(DiabetesRec) + factor(CancerEvBin) ,
                             design = cvdht.mort5.fin.sa)
 summary(mod2.cvdht.sa.l.ac)
 result.data <- rbind(result.data, addResult(mod2.cvdht.sa.l.ac, "2011 - 2014", "cvdht", "adjusted", "allcause"))
+
+###############################################################
+mod2.ht.sa.l.ac <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)+ factor(EduR)+ AGE +
+                                 factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR)+
+                                 factor(DiabetesRec) + factor(CancerEvBin) + factor(AnyCVD),
+                               design = ht.mort5.fin.sa)
+summary(mod2.ht.sa.l.ac)
+result.data <- rbind(result.data, addResult(mod2.ht.sa.l.ac, "2011 - 2014", "ht", "adjusted", "allcause"))
 
 ######################################################################################
 result.data[17, "model"] <- "adjusted"
