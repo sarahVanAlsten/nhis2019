@@ -32,3 +32,13 @@ printCoef(mod2.cvd.sa.l.ac)
 printCoef(mod2.cvdht.allcause)
 printCoef(mod2.early.cvdht.allcause)
 printCoef(mod2.cvdht.sa.l.ac)
+
+
+#hypertension
+printCoef(mod2.ht.sa)
+printCoef(mod2.ht.sa.l)
+printCoef(mod2.early.ht)
+
+printCoef(mod2.ht.allcause)
+printCoef(mod2.ht.sa.l.ac)
+printCoef(mod2.early.ht.allcause)
