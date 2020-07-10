@@ -78,3 +78,27 @@ lines(smooth.spline((data.cvdHt.mod2$AGE)^(.33), martingale.cvdHt), col="red", l
 plot((data.cvdHt.mod2$AGE)^(.5), martingale.cvdHt)
 lines(smooth.spline((data.cvdHt.mod2$AGE)^(.5), martingale.cvdHt), col="red", lwd=2)
 #same thing - it's basically linear until age 65... Medicare?
+
+#########################################################################
+data.Ht.mod2 <- ht.mort14.fin.sa$variables %>%
+  drop_na(SEX, CRN, htMort, RaceR, IncomeR, InsType, EduR, AGE, fuTime)
+
+
+Ht.noage <- svycoxph(formula = Surv(fuTime, htMort)~factor(CRN) + factor(EduR)+
+                          factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) ,
+                        design = ht.mort14.fin.sa)
+
+martingale.Ht <- residuals(Ht.noage, type = "martingale")
+
+#log
+plot(log(data.Ht.mod2$AGE), martingale.Ht)
+lines(smooth.spline(log(data.Ht.mod2$AGE), martingale.Ht), col="red", lwd=2)
+
+#cube root
+plot((data.Ht.mod2$AGE)^(.33), martingale.Ht)
+lines(smooth.spline((data.Ht.mod2$AGE)^(.33), martingale.Ht), col="red", lwd=2)
+
+#sqrt
+plot((data.Ht.mod2$AGE)^(.5), martingale.Ht)
+lines(smooth.spline((data.Ht.mod2$AGE)^(.5), martingale.Ht), col="red", lwd=2)
+
