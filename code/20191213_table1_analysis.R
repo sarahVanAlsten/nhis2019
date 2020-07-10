@@ -3,7 +3,7 @@
 #Created: Dec 13, 2019
 #Use the cleaned data from 20190928_NHIS.R to create table 1 (descriptive stats)
 #Packages used: ipumsr, tidyverse, tableone, survival, survey
-#Last Update: March 3, 2020
+#Last Update: July 7, 2020
 ################################################################################
 #first, create the survey design for the study, using the appropriate
 #weight variables. 'PERWEIGHT' is for variables asked of everyone, whereas
@@ -46,10 +46,12 @@ eligible <- eligible %>%
 
 
 table(eligible$CRN, eligible$ASTATFLG, useNA = "ifany")
+xtabs(~eligible$MORTHYPR+ eligible$HyperTen +eligible$CRN)
+
 
 #sum of crn bx
 crnSum <- eligible %>%
-  filter(YEAR > 2010) %>%
+  dplyr::filter(YEAR > 2010) %>%
   mutate(crnSum = lessMed + skipMed + delayMed) %>%
   summarise(sum(crnSum ==1, na.rm = T)/16297,
             sum(crnSum ==2, na.rm = T)/16297,
@@ -85,6 +87,11 @@ eligible <- eligible %>%
                            ifelse((MORTUCODLD == 7 | MORTUCOD == 46 | MORTDIAB == 2), 1, 0))))
 
 eligible <- eligible %>%
+   mutate(htMort = ifelse(DEAD == 0, 0,
+                            ifelse(MORTHYPR == 2, 1,
+                                   ifelse(MORTHYPR == 1, 0, NA))))
+
+eligible <- eligible %>%
   mutate(cvdMort = ifelse(DEAD == 0, 0,
                           ifelse(is.na(MORTUCODLD) & is.na(MORTUCOD), NA, 
                            ifelse((MORTUCODLD == 1 | MORTUCODLD == 5 | (MORTUCOD >= 56  & MORTUCOD <= 75)), 1, 0))))
@@ -94,6 +101,19 @@ eligible <- eligible %>%
                           ifelse(is.na(MORTUCODLD) & is.na(MORTUCOD) & is.na(MORTHYPR), NA, 
                                  ifelse(MORTHYPR == 2 | MORTUCODLD == 1 | MORTUCODLD == 5 | 
                                           (MORTUCOD >= 56  & MORTUCOD <= 75), 1, 0))))
+
+
+eligible <- eligible %>%
+  mutate(yearStrat = ifelse(YEAR <= 2010, 1, 0))
+
+eligible <- eligible %>%
+  select(YEAR, yearStrat, diabMort, cvdMort, htMort, AnyCVD, HyperTen, CancerEvBin, DiabetesRec,
+         fuTime, allCauseMort, cvdHtMort, AnyCVDHT, SEX, RaceR, InsType, AGE, BMI,
+         SmokeR, CRN, BarrierMedR, skipMed, lessMed, delayMed, sampWeight14, sampWeight5,
+         mortWeight14, mortWeight10, mortWeightSA5, mortWeightSA14, mortWeightSA10, perWeight14,
+         IncomeR, EduR, MORTUCOD, MORTUCODLD, MORTHYPR, MORTDIAB, REGION, PSU, STRATA)
+
+write.csv(eligible, "data\\eligibleSubset.csv")
 
 
 table(eligible$DEAD, eligible$MORTUCOD, useNA = "ifany")
@@ -157,40 +177,57 @@ diab.samp14 <- subset(samp14.Svy, DiabetesRec == 1)
 diab.samp5 <- subset(samp5.Svy, DiabetesRec == 1)
 cvd.samp14 <- subset(samp14.Svy, AnyCVD == 1)
 cvd.samp5 <- subset(samp5.Svy, AnyCVD == 1)
-cvdht.samp14 <- subset(samp14.Svy, AnyCVDHT == 1)
-cvdht.samp5 <- subset(samp5.Svy, AnyCVDHT == 1)
+#cvdht.samp14 <- subset(samp14.Svy, AnyCVDHT == 1)
+#cvdht.samp5 <- subset(samp5.Svy, AnyCVDHT == 1)
+
+#per reviewer request, add just a hypertension group
+ht.samp14 <- subset(samp14.Svy, HyperTen == 1)
+ht.samp5 <- subset(samp5.Svy, HyperTen == 1)
 
 diab.per14 <- subset(per14.Svy, DiabetesRec == 1)
 cvd.per14 <- subset(per14.Svy, AnyCVD == 1)
-cvdht.per14 <- subset(per14.Svy, AnyCVDHT == 1)
+#cvdht.per14 <- subset(per14.Svy, AnyCVDHT == 1)
+ht.per14 <- subset(per14.Svy, HyperTen ==1)
 
 diab.mort14 <- subset(mort14.Svy, DiabetesRec == 1)
 cvd.mort14 <- subset(mort14.Svy, AnyCVD == 1)
-cvdht.mort14 <- subset(mort14.Svy, AnyCVDHT == 1)
+#cvdht.mort14 <- subset(mort14.Svy, AnyCVDHT == 1)
+ht.per14 <- subset(mort14.Svy, HyperTen ==1)
 
 diab.mort10 <- subset(mort10.Svy, DiabetesRec == 1)
 cvd.mort10 <- subset(mort10.Svy, AnyCVD == 1)
-cvdht.mort10 <- subset(mort10.Svy, AnyCVDHT == 1)
+#cvdht.mort10 <- subset(mort10.Svy, AnyCVDHT == 1)
+ht.mort10 <- subset(mort10.Svy, HyperTen == 1)
 
 diab.mort14.fin <- subset(mort14.Svy, DiabetesRec == 1 & finprob == TRUE)
 cvd.mort14.fin <- subset(mort14.Svy, AnyCVD == 1 & finprob == TRUE)
-cvdht.mort14.fin <- subset(mort14.Svy, AnyCVDHT == 1 & finprob == TRUE)
+#cvdht.mort14.fin <- subset(mort14.Svy, AnyCVDHT == 1 & finprob == TRUE)
+ht.mort14.fin <- subset(mort14.Svy, HyperTen == 1 & finprob == TRUE)
 
 diab.mort10.fin <- subset(mort10.Svy, DiabetesRec == 1  & finprob10 == TRUE)
 cvd.mort10.fin <- subset(mort10.Svy, AnyCVD == 1 & finprob10 == TRUE)
-cvdht.mort10.fin <- subset(mort10.Svy, AnyCVDHT == 1 & finprob10 == TRUE)
+#cvdht.mort10.fin <- subset(mort10.Svy, AnyCVDHT == 1 & finprob10 == TRUE)
+ht.mort10.fin <- subset(mort10.Svy, HyperTen == 1 & finprob10 == TRUE)
 
 diab.mort14.fin.sa <- subset(mort14sa.Svy, DiabetesRec == 1 & finprobsa == TRUE)
 cvd.mort14.fin.sa <- subset(mort14sa.Svy, AnyCVD == 1 & finprobsa == TRUE)
-cvdht.mort14.fin.sa <- subset(mort14sa.Svy, AnyCVDHT == 1 & finprobsa == TRUE)
+#cvdht.mort14.fin.sa <- subset(mort14sa.Svy, AnyCVDHT == 1 & finprobsa == TRUE)
+ht.mort14.fin.sa <- subset(mort14sa.Svy, AnyCVD == 1 & finprobsa == TRUE)
 
 diab.mort10.fin.sa <- subset(mort10sa.Svy, DiabetesRec == 1  & finprobsa10 == TRUE)
 cvd.mort10.fin.sa <- subset(mort10sa.Svy, AnyCVD == 1 & finprobsa10 == TRUE)
-cvdht.mort10.fin.sa <- subset(mort10sa.Svy, AnyCVDHT == 1 & finprobsa10 == TRUE)
+#cvdht.mort10.fin.sa <- subset(mort10sa.Svy, AnyCVDHT == 1 & finprobsa10 == TRUE)
+ht.mort10.fin.sa <- subset(mort10.Svy, HyperTen == 1 & finprobsa10 == TRUE)
 
 diab.mort5.fin.sa <- subset(mort5sa.Svy, DiabetesRec == 1  & finprobsa5 == TRUE)
 cvd.mort5.fin.sa <- subset(mort5sa.Svy, AnyCVD == 1 & finprobsa5 == TRUE)
-cvdht.mort5.fin.sa <- subset(mort5sa.Svy, AnyCVDHT == 1 & finprobsa5 == TRUE)
+#cvdht.mort5.fin.sa <- subset(mort5sa.Svy, AnyCVDHT == 1 & finprobsa5 == TRUE)
+ht.mort5.fin.sa <- subset(mort5sa.Svy, HyperTen == 1 & finprobsa5 == TRUE)
+
+#No CRN
+nocrn.samp14 <- subset(samp14.Svy, CRN == 0 & (DiabetesRec==1 | AnyCVDHT ==1))
+nocrn.samp5 <- subset(samp5.Svy, CRN == 0 & (DiabetesRec==1 | AnyCVDHT ==1))
+nocrn.per14 <- subset(per14.Svy, CRN == 0 & (DiabetesRec==1 | AnyCVDHT ==1))
 
 # Make Table One ----------------------------------------------------------
 
@@ -200,10 +237,20 @@ cvdht.mort5.fin.sa <- subset(mort5sa.Svy, AnyCVDHT == 1 & finprobsa5 == TRUE)
 #FIRST, for CRN bx assessed in late years, and write out the files to CSVs so
 #I can look at them more easily later
 write.csv(
+print(
+  svyCreateTableOne(vars = c("skipMed", "delayMed", "lessMed"), strata = 'CRN', data = ht.samp5, 
+                    factorVars = c("skipMed", "delayMed", "lessMed"), includeNA = FALSE,
+                    test = TRUE, smd = TRUE), quote = FALSE, 
+  noSpaces = TRUE, printToggle = FALSE, format = "p"),
+file = "data\\htCRNtab.csv")
+
+
+
+write.csv(
   print(
 svyCreateTableOne(vars = c("skipMed", "delayMed", "lessMed"), strata = 'CRN', data = diab.samp5, 
                   factorVars = c("skipMed", "delayMed", "lessMed"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE), quote = FALSE, 
+                  test = TRUE, smd = TRUE), quote = FALSE, format = "p", 
 noSpaces = TRUE, printToggle = FALSE
 ),
 file = "data\\diabCRNtab.csv")
@@ -212,24 +259,31 @@ write.csv(
   print(
 svyCreateTableOne(vars = c("skipMed", "delayMed", "lessMed"), strata = 'CRN', data = cvd.samp5, 
                   factorVars = c("skipMed", "delayMed", "lessMed"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE), quote = FALSE, 
+                  test = TRUE, smd = TRUE), quote = FALSE, format = "p", 
       noSpaces = TRUE, printToggle = FALSE),
 file = "data\\cvdCRNtab.csv")
 
 
-write.csv(
-  print(
-svyCreateTableOne(vars = c("skipMed", "delayMed", "lessMed"), strata = 'CRN', data = cvdht.samp5, 
-                  factorVars = c("skipMed", "delayMed", "lessMed"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE), quote = FALSE, 
-noSpaces = TRUE, printToggle = FALSE), file = "data\\cvdhtCRNtab.csv")
+# write.csv(
+#   print(
+# svyCreateTableOne(vars = c("skipMed", "delayMed", "lessMed"), strata = 'CRN', data = cvdht.samp5, 
+#                   factorVars = c("skipMed", "delayMed", "lessMed"), includeNA = FALSE,
+#                   test = TRUE, smd = TRUE), quote = FALSE, format = "p",
+# noSpaces = TRUE, printToggle = FALSE), file = "data\\cvdhtCRNtab.csv")
 
 #now the remaining two questions asked of sample adults:all yrs
 write.csv(
   print(
+    svyCreateTableOne(vars = c("BarrierMedR", "SmokeR"), strata = 'CRN', data = ht.samp14, 
+                      factorVars = c("BarrierMedR", "SmokeR"), includeNA = FALSE,
+                      test = TRUE, smd = TRUE), quote = FALSE, format = "p",
+    noSpaces = TRUE, printToggle = FALSE), file = "data\\htSmoke.csv")
+
+write.csv(
+  print(
 svyCreateTableOne(vars = c("BarrierMedR", "SmokeR"), strata = 'CRN', data = diab.samp14, 
                   factorVars = c("BarrierMedR", "SmokeR"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE), quote = FALSE, 
+                  test = TRUE, smd = TRUE), quote = FALSE, format = "p", 
 noSpaces = TRUE, printToggle = FALSE
 
 ), file = "data\\diabSmoke.csv")
@@ -237,48 +291,68 @@ write.csv(
   print(
     svyCreateTableOne(vars = c("BarrierMedR", "SmokeR"), strata = 'CRN', data = cvd.samp14, 
                       factorVars = c("BarrierMedR", "SmokeR"), includeNA = FALSE,
-                      test = TRUE, smd = TRUE), quote = FALSE, 
+                      test = TRUE, smd = TRUE), quote = FALSE, format = "p", 
     noSpaces = TRUE, printToggle = FALSE
     
   ), file = "data\\cvdSmoke.csv")
-write.csv(
-  print(
-    svyCreateTableOne(vars = c("BarrierMedR", "SmokeR"), strata = 'CRN', data = cvdht.samp14, 
-                      factorVars = c("BarrierMedR", "SmokeR"), includeNA = FALSE,
-                      test = TRUE, smd = TRUE), quote = FALSE, 
-    noSpaces = TRUE, printToggle = FALSE
-    
-  ), file = "data\\cvdhtSmoke.csv")
+
+# write.csv(
+#   print(
+#     svyCreateTableOne(vars = c("BarrierMedR", "SmokeR"), strata = 'CRN', data = cvdht.samp14, 
+#                       factorVars = c("BarrierMedR", "SmokeR"), includeNA = FALSE,
+#                       test = TRUE, smd = TRUE), quote = FALSE, format = "p", 
+#     noSpaces = TRUE, printToggle = FALSE
+#     
+#   ), file = "data\\cvdhtSmoke.csv")
+
+
 #now things assessed for all participants: writing to CSVs
+write.csv(
+  print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
+                                   "RaceR", "InsType", "EduR", "IncomeR"), strata = 'CRN', data = ht.per14, 
+                          factorVars = c("SEX", "REGION", "RaceR", "InsType", "EduR", "IncomeR"), includeNA = FALSE,
+                          test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), quote = FALSE, format = "p",
+        noSpaces = TRUE, printToggle = FALSE)
+  , file = "data\\htTab1.csv")
+
 write.csv(
   print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
                            "RaceR", "InsType", "EduR", "IncomeR"), strata = 'CRN', data = diab.per14, 
                   factorVars = c("SEX", "REGION", "RaceR", "InsType", "EduR", "IncomeR"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), quote = FALSE, 
-      noSpaces = TRUE, printToggle = FALSE)
-, file = "data\\diabTab1.csv")
+                  test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), quote = FALSE,  format = "p",
+      noSpaces = TRUE, printToggle = FALSE), file = "data\\diabTab1.csv")
+
  
 write.csv( 
 print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
                            "RaceR", "InsType", "EduR", "IncomeR"), strata = 'CRN', data = cvd.per14, 
                   factorVars = c("SEX", "REGION", "RaceR", "InsType", "EduR", "IncomeR"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"),
+                  test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), format = "p",
       quote = FALSE, noSpaces = TRUE, printToggle = FALSE)
 , file = "data\\cvdTab1.csv")
 
-write.csv(
-print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
-                           "RaceR", "InsType", "EduR", "IncomeR"), strata = 'CRN', data = cvdht.per14, 
-                  factorVars = c("SEX", "REGION", "RaceR", "InsType", "EduR", "IncomeR"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), quote = FALSE, 
-      noSpaces = TRUE, printToggle = FALSE)
-, file = "data\\cvdhtTab1.csv")
+# write.csv(
+# print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
+#                            "RaceR", "InsType", "EduR", "IncomeR"), strata = 'CRN', data = cvdht.per14, 
+#                   factorVars = c("SEX", "REGION", "RaceR", "InsType", "EduR", "IncomeR"), includeNA = FALSE,
+#                   test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), quote = FALSE, format = "p", 
+#       noSpaces = TRUE, printToggle = FALSE)
+# , file = "data\\cvdhtTab1.csv")
 
 
 write.csv(
-  print(svyCreateTableOne(vars = c("AGE"), strata = 'CRN', data = cvdht.per14, includeNA = FALSE,
-                          test = TRUE, smd = TRUE), nonnormal = c("AGE"))
-  , file = "data\\cvdhtTab1.csv")
+  print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
+                                   "RaceR", "InsType", "EduR", "IncomeR"), data = nocrn.per14, 
+                          factorVars = c("SEX", "REGION", "RaceR", "InsType", "EduR", "IncomeR"),
+                          includeNA = FALSE), nonnormal = c("AGE", "BMI"), quote = FALSE, format = "p", 
+        noSpaces = TRUE, printToggle = FALSE)
+  , file = "data\\nocrnTab1.csv")
+
+
+# write.csv(
+#   print(svyCreateTableOne(vars = c("AGE"), strata = 'CRN', data = cvdht.per14, includeNA = FALSE,
+#                           test = TRUE, smd = TRUE), nonnormal = c("AGE"))
+#   , file = "data\\cvdhtTab1.csv")
 
 
 #BMI and Age (my only 2 continuous vars) are most likely not normally distributed
@@ -286,20 +360,20 @@ write.csv(
 
 ggplot(data = diab.per14$variables, aes(x = BMI, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
 ggplot(data = cvd.per14$variables, aes(x = BMI, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
-ggplot(data = cvdht.per14$variables, aes(x = BMI, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
+#ggplot(data = cvdht.per14$variables, aes(x = BMI, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
 
 #none of them are horrible, but they do all seem right skewed
 
 ggplot(data = diab.per14$variables, aes(x = AGE, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
 ggplot(data = cvd.per14$variables, aes(x = AGE, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
-ggplot(data = cvdht.per14$variables, aes(x = AGE, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
+#ggplot(data = cvdht.per14$variables, aes(x = AGE, group = CRN, fill = CRN), alpha = .5)+ geom_histogram()
 #age is definitely not normal: very left skewed
 
-kruskal.test(x = cvdht.per14$variables$BMI, g = cvdht.per14$variables$CRN)
+#kruskal.test(x = cvdht.per14$variables$BMI, g = cvdht.per14$variables$CRN)
 kruskal.test(x = cvd.per14$variables$BMI, g = cvd.per14$variables$CRN)
 kruskal.test(x = diab.per14$variables$BMI, g = diab.per14$variables$CRN)
 
-kruskal.test(x = cvdht.per14$variables$AGE, g = cvdht.per14$variables$CRN)
+#kruskal.test(x = cvdht.per14$variables$AGE, g = cvdht.per14$variables$CRN)
 kruskal.test(x = cvd.per14$variables$AGE, g = cvd.per14$variables$CRN)
 kruskal.test(x = diab.per14$variables$AGE, g = diab.per14$variables$CRN)
 
@@ -307,6 +381,6 @@ kruskal.test(x = diab.per14$variables$AGE, g = diab.per14$variables$CRN)
 table(diab.mort14$variables$DzSpecificDiab_NoNA, diab.mort14$variables$CRN, useNA = "ifany")
 table(cvd.mort14$variables$DzSpecificCVD_NoNA, cvd.mort14$variables$CRN, useNA = "ifany")
 table(cvd.mort14$variables$DzSpecificCVD, cvd.mort14$variables$CRN, useNA = "ifany")
-table(cvdht.mort14$variables$DzSpecificCVDHT, cvdht.mort14$variables$CRN, useNA = "ifany")
+#table(cvdht.mort14$variables$DzSpecificCVDHT, cvdht.mort14$variables$CRN, useNA = "ifany")
 table(cvd.mort14$variables$DzSpecificCVDHT_NoNA, cvd.mort14$variables$CRN, useNA = "ifany")
 table(diab.mort14$variables$DEAD, diab.mort14$variables$CRN, useNA = "ifany")
