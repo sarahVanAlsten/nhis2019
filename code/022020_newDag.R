@@ -17,12 +17,12 @@ grViz("
 	  node [shape = plaintext]
 	  A [label = 'Age']
 	  I [label = 'Insurance']
-	  S [label = 'Sex']
 	  M [label = 'Income']
 	  R [label = 'Race']
 	  B [label = 'BMI']
 	  E [label = 'Education']
 	  K [label = 'Smoking']
+	  S [label = 'Sex']
 	  C [label = 'CRN']
 	  Y [label = 'Disease Specific\nMortality']
 	  
@@ -39,6 +39,9 @@ grViz("
 	  M->Y
 	  M->K
 	  M->I
+	  S->K
+	  S->Y
+	  S->C
 	  E->M
 	  E->C
 	  E->Y
@@ -51,13 +54,10 @@ grViz("
 	  E->B
 	  M->B
 	  K->Y
-	  S->K
-	  S->Y
-	  S->C
 	  I->C
 	  I->Y
 	  C->Y
-
+ { rank = same; A; R; S }
 	  
 	  # Graph
 	  graph [overlap = true, fontsize = 10]
@@ -79,7 +79,7 @@ grViz("
 	  K [label = 'Smoking']
 	  X [label = 'Other Chronic\nConditions']
 	  C [label = 'CRN']
-	  Y [label = 'All Cause\nMortality']
+	  Y [label = 'Premature\nMortality']
 	  
 	  # Edges
 	  edge [color = black,
@@ -114,6 +114,7 @@ grViz("
 	  C->Y
 	  X->C
 	  X->Y
+      { rank = same; A; R; S }
 	  
 	  # Graph
 	  graph [overlap = true, fontsize = 10]
