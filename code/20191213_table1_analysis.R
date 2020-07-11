@@ -109,7 +109,7 @@ eligible <- eligible %>%
 eligible <- eligible %>%
   select(YEAR, yearStrat, diabMort, cvdMort, htMort, AnyCVD, HyperTen, CancerEvBin, DiabetesRec,
          fuTime, allCauseMort, cvdHtMort, AnyCVDHT, SEX, RaceR, InsType, AGE, BMI,
-         SmokeR, CRN, BarrierMedR, skipMed, lessMed, delayMed, sampWeight14, sampWeight5,
+         SmokeR, CRN, BarrierMedR, skipMed, lessMed, delayMed, sampWeight14, sampWeight5,mortWeight5,
          mortWeight14, mortWeight10, mortWeightSA5, mortWeightSA14, mortWeightSA10, perWeight14,
          IncomeR, EduR, MORTUCOD, MORTUCODLD, MORTHYPR, MORTDIAB, REGION, PSU, STRATA)
 
@@ -241,7 +241,7 @@ print(
   svyCreateTableOne(vars = c("skipMed", "delayMed", "lessMed"), strata = 'CRN', data = ht.samp5, 
                     factorVars = c("skipMed", "delayMed", "lessMed"), includeNA = FALSE,
                     test = TRUE, smd = TRUE), quote = FALSE, 
-  noSpaces = TRUE, printToggle = FALSE, format = "p"),
+  noSpaces = TRUE, printToggle = FALSE),
 file = "data\\htCRNtab.csv")
 
 
@@ -250,7 +250,7 @@ write.csv(
   print(
 svyCreateTableOne(vars = c("skipMed", "delayMed", "lessMed"), strata = 'CRN', data = diab.samp5, 
                   factorVars = c("skipMed", "delayMed", "lessMed"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE), quote = FALSE, format = "p", 
+                  test = TRUE, smd = TRUE), quote = FALSE,  
 noSpaces = TRUE, printToggle = FALSE
 ),
 file = "data\\diabCRNtab.csv")
@@ -259,7 +259,7 @@ write.csv(
   print(
 svyCreateTableOne(vars = c("skipMed", "delayMed", "lessMed"), strata = 'CRN', data = cvd.samp5, 
                   factorVars = c("skipMed", "delayMed", "lessMed"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE), quote = FALSE, format = "p", 
+                  test = TRUE, smd = TRUE), quote = FALSE,  
       noSpaces = TRUE, printToggle = FALSE),
 file = "data\\cvdCRNtab.csv")
 
@@ -268,7 +268,7 @@ file = "data\\cvdCRNtab.csv")
 #   print(
 # svyCreateTableOne(vars = c("skipMed", "delayMed", "lessMed"), strata = 'CRN', data = cvdht.samp5, 
 #                   factorVars = c("skipMed", "delayMed", "lessMed"), includeNA = FALSE,
-#                   test = TRUE, smd = TRUE), quote = FALSE, format = "p",
+#                   test = TRUE, smd = TRUE), quote = FALSE, 
 # noSpaces = TRUE, printToggle = FALSE), file = "data\\cvdhtCRNtab.csv")
 
 #now the remaining two questions asked of sample adults:all yrs
@@ -276,14 +276,14 @@ write.csv(
   print(
     svyCreateTableOne(vars = c("BarrierMedR", "SmokeR"), strata = 'CRN', data = ht.samp14, 
                       factorVars = c("BarrierMedR", "SmokeR"), includeNA = FALSE,
-                      test = TRUE, smd = TRUE), quote = FALSE, format = "p",
+                      test = TRUE, smd = TRUE), quote = FALSE, 
     noSpaces = TRUE, printToggle = FALSE), file = "data\\htSmoke.csv")
 
 write.csv(
   print(
 svyCreateTableOne(vars = c("BarrierMedR", "SmokeR"), strata = 'CRN', data = diab.samp14, 
                   factorVars = c("BarrierMedR", "SmokeR"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE), quote = FALSE, format = "p", 
+                  test = TRUE, smd = TRUE), quote = FALSE,  
 noSpaces = TRUE, printToggle = FALSE
 
 ), file = "data\\diabSmoke.csv")
@@ -291,7 +291,7 @@ write.csv(
   print(
     svyCreateTableOne(vars = c("BarrierMedR", "SmokeR"), strata = 'CRN', data = cvd.samp14, 
                       factorVars = c("BarrierMedR", "SmokeR"), includeNA = FALSE,
-                      test = TRUE, smd = TRUE), quote = FALSE, format = "p", 
+                      test = TRUE, smd = TRUE), quote = FALSE,  
     noSpaces = TRUE, printToggle = FALSE
     
   ), file = "data\\cvdSmoke.csv")
@@ -300,7 +300,7 @@ write.csv(
 #   print(
 #     svyCreateTableOne(vars = c("BarrierMedR", "SmokeR"), strata = 'CRN', data = cvdht.samp14, 
 #                       factorVars = c("BarrierMedR", "SmokeR"), includeNA = FALSE,
-#                       test = TRUE, smd = TRUE), quote = FALSE, format = "p", 
+#                       test = TRUE, smd = TRUE), quote = FALSE,  
 #     noSpaces = TRUE, printToggle = FALSE
 #     
 #   ), file = "data\\cvdhtSmoke.csv")
@@ -311,7 +311,7 @@ write.csv(
   print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
                                    "RaceR", "InsType", "EduR", "IncomeR"), strata = 'CRN', data = ht.per14, 
                           factorVars = c("SEX", "REGION", "RaceR", "InsType", "EduR", "IncomeR"), includeNA = FALSE,
-                          test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), quote = FALSE, format = "p",
+                          test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), quote = FALSE, 
         noSpaces = TRUE, printToggle = FALSE)
   , file = "data\\htTab1.csv")
 
@@ -319,7 +319,7 @@ write.csv(
   print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
                            "RaceR", "InsType", "EduR", "IncomeR"), strata = 'CRN', data = diab.per14, 
                   factorVars = c("SEX", "REGION", "RaceR", "InsType", "EduR", "IncomeR"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), quote = FALSE,  format = "p",
+                  test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), quote = FALSE,  
       noSpaces = TRUE, printToggle = FALSE), file = "data\\diabTab1.csv")
 
  
@@ -327,7 +327,7 @@ write.csv(
 print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
                            "RaceR", "InsType", "EduR", "IncomeR"), strata = 'CRN', data = cvd.per14, 
                   factorVars = c("SEX", "REGION", "RaceR", "InsType", "EduR", "IncomeR"), includeNA = FALSE,
-                  test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), format = "p",
+                  test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), 
       quote = FALSE, noSpaces = TRUE, printToggle = FALSE)
 , file = "data\\cvdTab1.csv")
 
@@ -335,7 +335,7 @@ print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
 # print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
 #                            "RaceR", "InsType", "EduR", "IncomeR"), strata = 'CRN', data = cvdht.per14, 
 #                   factorVars = c("SEX", "REGION", "RaceR", "InsType", "EduR", "IncomeR"), includeNA = FALSE,
-#                   test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), quote = FALSE, format = "p", 
+#                   test = TRUE, smd = TRUE), nonnormal = c("AGE", "BMI"), quote = FALSE,  
 #       noSpaces = TRUE, printToggle = FALSE)
 # , file = "data\\cvdhtTab1.csv")
 
@@ -344,7 +344,7 @@ write.csv(
   print(svyCreateTableOne(vars = c("AGE", "SEX", "BMI", "REGION",
                                    "RaceR", "InsType", "EduR", "IncomeR"), data = nocrn.per14, 
                           factorVars = c("SEX", "REGION", "RaceR", "InsType", "EduR", "IncomeR"),
-                          includeNA = FALSE), nonnormal = c("AGE", "BMI"), quote = FALSE, format = "p", 
+                          includeNA = FALSE), nonnormal = c("AGE", "BMI"), quote = FALSE,  
         noSpaces = TRUE, printToggle = FALSE)
   , file = "data\\nocrnTab1.csv")
 
