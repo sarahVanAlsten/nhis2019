@@ -10,13 +10,15 @@
 ################################################################################
 library(survminer)
 
+diab.mort14.fin.sa <- update(diab.mort14.fin.sa, yearStrat = ifelse(YEAR <= 2010, 1, 0))
+
 diab.strat <- coxph(formula = Surv(fuTime, diabMort)~factor(CRN)*factor(yearStrat) ,
                     data = diab.mort14.fin.sa$variables)
 summary(diab.strat)
 
 diab.strat <- svycoxph(formula = Surv(fuTime, diabMort)~factor(CRN)*factor(yearStrat) + factor(EduR)+ AGE +
-                         factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) ,
-                                              design = diab.mort14.fin.sa)
+                         factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + factor(CancerEvBin)+
+                         factor(AnyCVDHT),design = diab.mort14.fin.sa)
 summary(diab.strat)
 
 
@@ -25,24 +27,42 @@ diab.strat <- coxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)*factor(year
 summary(diab.strat)
 
 diab.strat <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)*factor(yearStrat) + factor(EduR)+ AGE +
-                         factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + factor(CancerEvBin)+
+                         factor(IncomeR) + strata(SEX) + factor(InsType) + factor(RaceR) + strata(CancerEvBin)+
                          factor(AnyCVDHT),
                        design = diab.mort14.fin.sa)
 summary(diab.strat)
 
+cvd.mort14.fin.sa <- update(cvd.mort14.fin.sa, yearStrat = ifelse(YEAR <= 2010, 1, 0))
+cvdht.mort14.fin.sa <- update(cvdht.mort14.fin.sa, yearStrat = ifelse(YEAR <= 2010, 1, 0))
 
 cvd.strat <- coxph(formula = Surv(fuTime, cvdMort)~factor(CRN)*factor(yearStrat) ,
                     data = cvd.mort14.fin.sa$variables)
 summary(cvd.strat)
 
+cvdht.strat <- coxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN)*factor(yearStrat) ,
+                   data = cvdht.mort14.fin.sa$variables)
+summary(cvd.strat)
+
 cvd.strat <- svycoxph(formula = Surv(fuTime, cvdMort)~factor(CRN)*factor(yearStrat) + factor(EduR)+ AGE +
-                         factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) ,
+                         factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + factor(CancerEvBin)+
+                        factor(DiabetesRec)+ factor(HyperTen),
                        design = cvd.mort14.fin.sa)
 summary(cvd.strat)
+
+cvdht.strat <- svycoxph(formula = Surv(fuTime, cvdHtMort)~factor(CRN)*factor(yearStrat) + factor(EduR)+ AGE +
+                        factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + factor(CancerEvBin)+
+                        factor(DiabetesRec),
+                      design = cvdht.mort14.fin.sa)
+summary(cvdht.strat)
+
 
 
 cvd.strat <- coxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)*factor(yearStrat) ,
                    data = cvd.mort14.fin.sa$variables)
+summary(cvd.strat)
+
+cvdht.strat <- coxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)*factor(yearStrat) ,
+                   data = cvdht.mort14.fin.sa$variables)
 summary(cvd.strat)
 
 cvd.strat <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)*factor(yearStrat) + factor(EduR)+ AGE +
@@ -50,18 +70,29 @@ cvd.strat <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)*factor(ye
                         factor(DiabetesRec)+ factor(HyperTen),
                       design = cvd.mort14.fin.sa)
 summary(cvd.strat)
+
+cvdht.strat <- svycoxph(formula = Surv(fuTime, allCauseMort)~factor(CRN)*factor(yearStrat) + factor(EduR)+ AGE +
+                        factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + factor(CancerEvBin)+
+                        factor(DiabetesRec),
+                      design = cvdht.mort14.fin.sa)
+summary(cvdht.strat)
+
+
 #############################################################
 #now check the assumptions
 #first: the proportional hazards assumption
 #for dz specific mortality
 zph.diab1 <- cox.zph(mod1.diab.sa)
-zph.diab2 <- cox.zph(mod2.diab.sa)
+zph.diab2 <- cox.zph(mod2.diab.sa, terms = F)
 
 zph.cvd1 <- cox.zph(mod1.cvd.sa)
-zph.cvd2 <- cox.zph(mod2.cvd.sa)
+zph.cvd2 <- cox.zph(mod2.cvd.sa, terms = F)
+
+zph.ht1 <- cox.zph(mod1.ht.sa)
+zph.ht2 <- cox.zph(mod2.ht.sa)
 
 zph.cvdht1 <- cox.zph(mod1.cvdht.sa)
-zph.cvdht2 <- cox.zph(mod2.cvdht.sa)
+zph.cvdht2 <- cox.zph(mod2.cvdht.sa, terms = F)
 ############################################################
 #for all cause
 zph.diab1.ac <- cox.zph(mod1.diab.allcause)
@@ -69,6 +100,9 @@ zph.diab2.ac <- cox.zph(mod2.diab.allcause)
 
 zph.cvd1.ac <- cox.zph(mod1.cvd.allcause)
 zph.cvd2.ac <- cox.zph(mod2.cvd.allcause)
+
+zph.ht1.ac <- cox.zph(mod1.ht.allcause)
+zph.ht2.ac <- cox.zph(mod2.ht.allcause)
 
 zph.cvdht1.ac <- cox.zph(mod1.cvdht.allcause)
 zph.cvdht2.ac <- cox.zph(mod2.cvdht.allcause)
@@ -144,7 +178,7 @@ violatedPH <- lapply(zphList, FUN = getPHViolation)
 #look at the schoedenfeld resid for vars in violation
 #####################################################################
 ggcoxzph(zph.diab2, var = "AGE", caption = "Age in DM Model") #no clear inflection pt
-ggcoxzph(zph.diab2, var = "factor(SEX)2", caption = "Sex in DM Model") #inflection around 190 wks
+ggcoxzph(zph.diab2, var = "factor(SEX)", caption = "Sex in DM Model") #inflection around 190 wks
 ggcoxzph(zph.diab2, var = "factor(IncomeR)4", caption= "Income Cat 4 in DM Model") #doesn't visually look bad... outliers really
 ggcoxzph(zph.diab2, var = "factor(IncomeR)5", caption = "Income Cat 5 in DM Model") #same - doesn't look bad just outliers
 
@@ -215,4 +249,127 @@ ggcoxzph(zph.cvdht2.ace, var = "factor(SEX)2") #slow increase
 ggcoxzph(zph.cvdht2.ace, var = "factor(IncomeR)2") #dip til 300, though small
 ggcoxzph(zph.cvdht2.ace, var = "factor(IncomeR)4") #fairly flat
 ggcoxzph(zph.cvdht2.ace, var = "factor(IncomeR)5") #fairly flat
+
+
+
+# Survival Plots ----------------------------------------------------------
+library(survminer)
+
+race.surv <- survfit(Surv(fuTime, allCauseMort) ~ factor(CRN) + factor(EduR)+ AGE +
+                       factor(IncomeR) + factor(SEX) + factor(InsType) + factor(RaceR) + factor(CancerEvBin)+
+                       factor(AnyCVDHT),
+                     data = eligible[eligible$DiabetesRec ==1,])
+
+ggsurvplot(race.surv, data = eligible[eligible$DiabetesRec ==1,], conf.int = T, risk.table = F,
+           tables.theme = clean_theme(), palette = "spectral",
+           #make text smaller so all race values fit
+           ggtheme = theme_classic2(base_size=8))
+
+eligible$YearStrat <- ifelse(eligible$YEAR <=2010,1,0)
+eligible$Year_CRN <- ifelse(eligible$YEAR <=2010 & eligible$CRN == 1,"Early CRN",
+                            ifelse(eligible$YEAR <=2010 & eligible$CRN == 0, "Early No CRN",
+                            ifelse(eligible$YEAR > 2010 & eligible$CRN == 1, "Late CRN", "Late No CRN")))
+
+race.surv2 <- survfit(Surv(fuTime, diabMort) ~ Year_CRN,
+                     data = eligible[eligible$DiabetesRec ==1,])
+
+ggsurvplot(race.surv2, data = eligible[eligible$DiabetesRec ==1,], conf.int = T, risk.table = F,
+           tables.theme = clean_theme(), palette = "spectral",
+           #make text smaller so all race values fit
+           ggtheme = theme_classic2(base_size=8))
+
+race.surv2 <- survfit(Surv(fuTime, allCauseMort) ~ Year_CRN,
+                      data = eligible[eligible$DiabetesRec ==1,])
+
+ggsurvplot(race.surv2, data = eligible[eligible$DiabetesRec ==1,], conf.int = T, risk.table = F,
+           tables.theme = clean_theme(), palette = "spectral",
+           #make text smaller so all race values fit
+           ggtheme = theme_classic2(base_size=8))
+
+
+
+race.surv <- survfit(Surv(fuTime, allCauseMort) ~ CRN,
+                     data = eligible[eligible$AnyCVD ==1,])
+
+ggsurvplot(race.surv, data = eligible[eligible$AnyCVD ==1,], conf.int = T, risk.table = F,
+           tables.theme = clean_theme(), palette = "spectral",
+           #make text smaller so all race values fit
+           ggtheme = theme_classic2(base_size=8))
+########################################################################################################
+race.surv2 <- survfit(Surv(fuTime, allCauseMort) ~ YearStrat,
+                      data = eligible[eligible$AnyCVD ==1,])
+
+ggsurvplot(race.surv2, data = eligible[eligible$AnyCVD ==1,], conf.int = T, risk.table = F,
+           tables.theme = clean_theme(), palette = "spectral",
+           #make text smaller so all race values fit
+           ggtheme = theme_classic2(base_size=8))
+
+
+race.surv2 <- survfit(Surv(fuTime, cvdMort) ~ Year_CRN,
+                      data = eligible[eligible$AnyCVD ==1,])
+
+ggsurvplot(race.surv2, data = eligible[eligible$AnyCVD ==1,], conf.int = T, risk.table = F,
+           tables.theme = clean_theme(), palette = "spectral",
+           #make text smaller so all race values fit
+           ggtheme = theme_classic2(base_size=8))
+
+
+race.surv2 <- survfit(Surv(fuTime, cvdMort) ~ YearStrat,
+                      data = eligible[eligible$AnyCVD ==1,])
+
+ggsurvplot(race.surv2, data = eligible[eligible$AnyCVD ==1,], conf.int = T, risk.table = F,
+           tables.theme = clean_theme(), palette = "spectral",
+           #make text smaller so all race values fit
+           ggtheme = theme_classic2(base_size=8))
+
+
+race.surv2 <- survfit(Surv(fuTime, cvdMort) ~ Year_CRN,
+                      data = eligible[eligible$AnyCVD ==1,])
+
+ggsurvplot(race.surv2, data = eligible[eligible$AnyCVD ==1,], conf.int = T, risk.table = F,
+           tables.theme = clean_theme(), palette = "spectral",
+           #make text smaller so all race values fit
+           ggtheme = theme_classic2(base_size=8))
+
+
+##################################################################################
+ eligible <- eligible %>%
+   mutate(htMort = ifelse(DEAD == 0, 0,
+                            ifelse(MORTHYPR == 2, 1, 
+                                   ifelse(MORTHYPR == 1, 0, NA))))
+
+race.surv2 <- survfit(Surv(fuTime, allCauseMort) ~ YearStrat,
+                      data = eligible[eligible$HyperTen ==1,])
+
+ggsurvplot(race.surv2, data = eligible[eligible$HyperTen ==1,], conf.int = T, risk.table = F,
+           tables.theme = clean_theme(), palette = "spectral",
+           #make text smaller so all race values fit
+           ggtheme = theme_classic2(base_size=8))
+
+
+race.surv2 <- survfit(Surv(fuTime, htMort) ~ Year_CRN,
+                      data = eligible[eligible$HyperTen ==1,])
+
+ggsurvplot(race.surv2, data = eligible[eligible$HyperTen ==1,], conf.int = T, risk.table = F,
+           tables.theme = clean_theme(), palette = "spectral",
+           #make text smaller so all race values fit
+           ggtheme = theme_classic2(base_size=8))
+
+
+race.surv2 <- survfit(Surv(fuTime, htMort) ~ YearStrat,
+                      data = eligible[eligible$HyperTen ==1,])
+
+ggsurvplot(race.surv2, data = eligible[eligible$HyperTen ==1,], conf.int = T, risk.table = F,
+           tables.theme = clean_theme(), palette = "spectral",
+           #make text smaller so all race values fit
+           ggtheme = theme_classic2(base_size=8))
+
+
+race.surv2 <- survfit(Surv(fuTime, allCauseMort) ~ Year_CRN,
+                      data = eligible[eligible$HyperTen ==1,])
+
+ggsurvplot(race.surv2, data = eligible[eligible$HyperTen ==1,], conf.int = T, risk.table = F,
+           tables.theme = clean_theme(), palette = "spectral",
+           #make text smaller so all race values fit
+           ggtheme = theme_classic2(base_size=8))
 
